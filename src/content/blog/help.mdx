@@ -1,6 +1,10 @@
 ---
-layout: "@layouts/Layout.astro"
 title: Help!
+author: mun Kekan San
+description: How do I use ilo Muni?!
+date: 2024-08-10
+updated: 2026-04-03
+published: true
 ---
 
 import { Icon } from "astro-icon/components";
@@ -202,10 +206,10 @@ underscore `_` and then any of the following attributes:
   [**taso_start**](/?query=taso_start)
 - **end**: Count only terms at the end of a sentence:
   [**anu seme_end**](/?query=anu+seme_end)
-- **inner**: Count only terms inside the sentence, neither at the
-  start nor end: [**nasa_inner**](/?query=nasa_inner)
-- **full**: Count only terms that are the entire sentence, at both the start
-  and end: [**toki_full**](/?query=toki_full)
+- **inner**: Count only terms inside the sentence, neither at the start nor end:
+  [**nasa_inner**](/?query=nasa_inner)
+- **full**: Count only terms that are the entire sentence, at both the start and
+  end: [**toki_full**](/?query=toki_full)
 - **short**: Count only terms in "short" sentences, with fewer than 4 words:
   [**toki pona_short**](/?query=toki+pona_short)
 - **long**: Count only terms in "long" sentences, with 4 or more words:
@@ -464,7 +468,7 @@ length in ilo Muni's database, so
 [download the database](https://gregdan3.com/sqlite/2024-11-29-trimmed.sqlite.gz)
 to try it!
 
-2. **What percentage of all words are in this term?**
+1. **What percentage of all words are in this term?**
 
 For graphing a single term with two or more words, you can get interesting and
 meaningful results from this question. To do this, we would multiply the number
@@ -491,7 +495,7 @@ words. But there were never any occurrences of "pona" in the occurrences of
 works out to **-0.9%** ((100 - (90 \* 2)) / 10,000), which is an even worse
 result than before and likely doesn't mean anything to a user.
 
-3. **What percentage of all words are any word in this phrase?**
+1. **What percentage of all words are any word in this phrase?**
 
 In this method, we take the number of times a given phrase occurred, regardless
 of its length, and divide it by the total number of words. This seems incorrect

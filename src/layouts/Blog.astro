@@ -1,0 +1,124 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { formatDate } from "@utils/content.ts";
+
+export interface Props {
+  post: CollectionEntry<"blog">;
+}
+
+const { post } = Astro.props;
+---
+
+<div class="container">
+  <div class="header">
+    <div>
+      <span>
+        <h1 class="title">{post.data.title}</h1>
+        {
+          post.data.author ? (
+            <span class="author">
+              {post.data.authorLink ? (
+                <a
+                  href={post.data.authorLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  by {post.data.author}
+                </a>
+              ) : (
+                <span>by {post.data.author}</span>
+              )}
+            </span>
+          ) : (
+            ""
+          )
+        }
+      </span>
+      <div class="description">{post.data.description}</div>
+    </div>
+
+    <div class="dates">
+      <div class="date">{formatDate(post.data.date)}</div>
+      <div class="updated">
+        {post.data.updated ? `*${formatDate(post.data.updated)}` : ""}
+      </div>
+    </div>
+  </div>
+
+  <hr />
+
+  <main>
+    <slot />
+  </main>
+</div>
+
+<style>
+  .container {
+    position: relative;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .header {
+    display: flex;
+    margin: 0.5rem 1.5rem 0.5rem 1.5rem;
+  }
+
+  .header > div:first-child {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .title {
+    display: inline;
+  }
+
+  .description {
+    border-left: 4px black solid;
+    border-radius: 3px;
+    padding: 8px;
+    margin: 4px;
+    line-height: 1.2rem;
+    background-color: lightgray;
+  }
+
+  .author {
+    margin-left: 4px;
+  }
+
+  .dates {
+    text-align: right;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    line-height: 1rem;
+    font-family: monospace;
+    margin-left: auto;
+  }
+
+  .date {
+  }
+
+  .updated {
+    color: gray;
+  }
+
+  @media (max-width: 600px) {
+    .title {
+      padding-right: 5.8rem;
+      font-size: 1.6rem;
+    }
+    .header {
+      margin: 0rem;
+      flex-direction: column;
+    }
+
+    .dates {
+      position: absolute;
+      right: 0;
+    }
+    .author {
+      display: block;
+    }
+  }
+</style>

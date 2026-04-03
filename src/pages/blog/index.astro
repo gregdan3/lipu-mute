@@ -1,0 +1,86 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
+import Layout from "@layouts/Layout.astro";
+import { formatDate, isPublished } from "@utils/content.ts";
+
+const frontmatter = { title: "ilo Muni" };
+
+let posts = await getCollection("blog", (post) => isPublished(post));
+posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<Layout frontmatter={frontmatter}>
+  <div class="feed">
+    {
+      posts.map((post) => (
+        <div class="entry">
+          <div class="date">
+            <div>{formatDate(post.data.date)}</div>
+            <div class="author">by {post.data.author}</div>
+          </div>
+          <div class="content">
+            <div class="title">
+              <a href={`/blog/${post.slug}/`}>{post.data.title}</a>
+            </div>
+            {post.data.description && (
+              <div class="description">{post.data.description}</div>
+            )}
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <style>
+    .feed {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1rem;
+      line-height: 1.3rem;
+    }
+
+    .entry {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .date {
+      flex-shrink: 0;
+      width: 150px;
+      text-align: right;
+      color: #333;
+    }
+
+    .author {
+      font-size: 0.8em;
+      color: gray;
+    }
+
+    .content {
+      flex: 1;
+    }
+
+    .title {
+      font-weight: bold;
+    }
+
+    .description {
+      font-size: 0.8em;
+      color: #555;
+    }
+
+    @media (max-width: 600px) {
+      .date {
+        width: inherit;
+      }
+      .feed {
+        width: inherit;
+      }
+    }
+  </style>
+</Layout>

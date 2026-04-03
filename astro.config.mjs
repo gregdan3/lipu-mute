@@ -10,6 +10,12 @@ import icon from "astro-icon";
 // https://astro.build/config
 export default defineConfig({
   site: "https://ilo.muni.la/",
+  redirects: {
+    "/about": "/blog/about",
+    "/about.html": "/blog/about",
+    "/help": "/blog/help",
+    "/help.html": "/blog/help",
+  },
   base: "",
   publicDir: "./static",
   integrations: [
