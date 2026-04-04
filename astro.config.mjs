@@ -47,6 +47,9 @@ export default defineConfig({
     },
   },
   devToolbar: {
-    enabled: false,
+    enabled: true,
+  },
+  experimental: {
+    rustCompiler: true,
   },
 });
