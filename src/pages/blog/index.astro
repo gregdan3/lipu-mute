@@ -21,7 +21,7 @@ posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
           </div>
           <div class="content">
             <div class="title">
-              <a href={`/blog/${post.slug}/`}>{post.data.title}</a>
+              <a href={`/blog/${post.id}`}>{post.data.title}</a>
             </div>
             {post.data.description && (
               <div class="description">{post.data.description}</div>
