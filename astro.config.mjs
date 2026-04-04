@@ -2,8 +2,10 @@ import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import remarkToc from "remark-toc";
-import compress from "astro-compress";
+import compress from "@playform/compress";
 import robotsTxt from "astro-robots-txt";
+import purgecss from "astro-purgecss";
+import inline from "@playform/inline";
 
 import icon from "astro-icon";
 
@@ -22,6 +24,8 @@ export default defineConfig({
     mdx(),
     sitemap(),
     icon({ iconDir: "src/icons" }),
+    purgecss(),
+    inline(),
     robotsTxt(),
     compress(),
   ],
