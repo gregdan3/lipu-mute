@@ -22,7 +22,7 @@ const frontmatter = { title: "ilo Muni" };
   import { countQuery } from "@utils/analytics";
   import { truncateLabel } from "@utils/other.ts";
   import { FIELDS, SCALES, defaultScale } from "@utils/constants";
-  import { randomQuery, copyUrlToClipboard } from "@utils/ui";
+  import { randomQuery, fetchElems } from "@utils/ui";
 
   const els = {
     usageCanvas: ["usage", HTMLCanvasElement],
@@ -47,21 +47,7 @@ const frontmatter = { title: "ilo Muni" };
     usageForm: ["usageForm", HTMLFormElement],
   } as const;
 
-  function getEls<T extends Record<string, readonly [string, any]>>(defs: T) {
-    const out = {} as {
-      [K in keyof T]: InstanceType<T[K][1]>;
-    };
-
-    for (const key in defs) {
-      const [id, Type] = defs[key];
-      const el = document.getElementById(id);
-      if (!el) throw new Error(`Missing element #${id}`);
-      out[key] = el as InstanceType<typeof Type>;
-    }
-
-    return out;
-  }
-  const $ = getEls(els);
+  const $ = fetchElems(els);
 
   function dumpErrors(queries: Query[]) {
     $.errorBin.innerHTML = "";
@@ -110,7 +96,7 @@ const frontmatter = { title: "ilo Muni" };
   }
 
   async function updatePage() {
-    const queryText = $.searchBox.value;
+    const query = $.searchBox.value;
     let scale = $.scaleDropdown.value as Scale;
     const field = $.fieldDropdown.value as Field;
     const smoother = $.smootherDropdown.value as Smoother;
@@ -169,6 +155,7 @@ const frontmatter = { title: "ilo Muni" };
     $.errorer.style.visibility = "hidden";
 
     let params: Params = {
+      query,
       scale,
       field,
       smoother,
@@ -180,7 +167,7 @@ const frontmatter = { title: "ilo Muni" };
 
     let queries: Query[] = [];
     try {
-      queries = await updateChart(queryText, params);
+      queries = await updateChart(params);
       dumpErrors(queries);
     } catch (err) {
       console.error("Couldn't update chart!", err);
@@ -196,12 +183,12 @@ const frontmatter = { title: "ilo Muni" };
     // valid queries have stable syntax
     let queryReprs = queries.filter((q) => !hasError(q)).map((q) => q.repr);
     // errors are removed
-    let query = queryReprs.join(", ");
+    let queryRepr = queryReprs.join(", ");
     // technically wasteful but looks better
 
     // some params get changed by the query itself
     let usedParams: Record<string, string> = {
-      query: query,
+      query: queryRepr,
       scale: $.scaleDropdown.value,
       field: $.fieldDropdown.value,
       start: $.startDropdown.value,
@@ -219,8 +206,8 @@ const frontmatter = { title: "ilo Muni" };
     countQuery();
   }
 
-  async function updateChart(input: string, params: Params): Promise<Query[]> {
-    const queries = await parseInput(input);
+  async function updateChart(params: Params): Promise<Query[]> {
+    const queries = await parseInput(params.query);
     const queryResultProms = queries.map((query) =>
       resolveQuery(query, params),
     );

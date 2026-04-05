@@ -28,6 +28,23 @@ export async function copyUrlToClipboard() {
   }
 }
 
+export function fetchElems<T extends Record<string, readonly [string, any]>>(
+  defs: T,
+) {
+  const out = {} as {
+    [K in keyof T]: InstanceType<T[K][1]>;
+  };
+
+  for (const key in defs) {
+    const [id, Type] = defs[key];
+    const el = document.getElementById(id);
+    if (!el) throw new Error(`Missing element #${id}`);
+    out[key] = el as InstanceType<typeof Type>;
+  }
+
+  return out;
+}
+
 export function formatInteger(n: number): string {
   const suffixes = ["", "K", "M", "B", "T"];
   const tier = (Math.log10(Math.abs(n)) / 3) | 0;

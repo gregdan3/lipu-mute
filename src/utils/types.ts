@@ -79,6 +79,7 @@ export interface Query {
 }
 
 export interface Params {
+  query: string;
   scale: Scale;
   field: Field;
   smoother: Smoother;
@@ -92,11 +93,11 @@ export interface SearchURLParams {
   query: string;
   scale: Scale | null;
   field: Field | null;
-  unit: UnitTime | null;
-  smoothing: SmoothingParam | null;
   smoother: Smoother | null;
+  smoothing: SmoothingParam | null;
   start: string | null;
   end: string | null;
+  unit: UnitTime | null;
 }
 
 export interface RanksURLParams {
