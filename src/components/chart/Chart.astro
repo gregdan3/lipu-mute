@@ -1,0 +1,29 @@
+---
+import Loader from "@components/Loader.astro";
+import Errorer from "@components/Errorer.astro";
+
+export interface ChartConfig {
+  chartId: string;
+  controllerId?: string;
+}
+const { chartId, controllerId } = Astro.props as ChartConfig;
+---
+
+<div style="position: relative; margin-top: 0.25em;">
+  <canvas id={chartId} style="width: 100%;  max-height: 70vh;"></canvas>
+
+  <div id=`${chartId}Legend` style="margin-top: 0.75em;">
+    <div
+      style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events: none;"
+    >
+      <Loader id="loader" />
+      <Errorer id="errorer" />
+    </div>
+  </div>
+</div>
+
+<style></style>
+
+<script>
+  let a = 1;
+</script>

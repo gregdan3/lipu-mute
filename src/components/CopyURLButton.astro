@@ -1,0 +1,17 @@
+---
+import IconButton from "@components/IconButton.astro";
+---
+
+<span data-copy-url-button>
+  <IconButton icon="mingcute:copy-line" />
+</span>
+
+<script>
+  import { copyUrlToClipboard } from "@utils/ui";
+
+  document.querySelectorAll("[data-copy-url-button]").forEach((container) => {
+    container.addEventListener("click", async () => {
+      await copyUrlToClipboard();
+    });
+  });
+</script>

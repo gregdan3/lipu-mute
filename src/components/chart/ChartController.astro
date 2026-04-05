@@ -1,0 +1,119 @@
+---
+export interface ControllerConfig {
+  chartId: string;
+  controllerId?: string;
+}
+const { chartId, controllerId } = Astro.props as ControllerConfig;
+
+import CopyURLButton from "@components/CopyURLButton.astro";
+import IntDropdown from "@components/IntDropdown.astro";
+import CategorizedDropdown from "@components/CategorizedDropdown.astro";
+import EpochRangePicker from "@components/EpochRangePicker.astro";
+import IconButton from "@components/IconButton.astro";
+import InfoModal from "@components/InfoModal.astro";
+import Help from "@components/search/Help.mdx";
+import { Icon } from "astro-icon/components";
+
+import {
+  EARLIEST_YEAR,
+  FIELDS,
+  LATEST_YEAR,
+  SCALES,
+  SMOOTHERS,
+  SMOOTHINGS,
+  UNIT_TIMES,
+  defaultScale,
+  defaultSmoother,
+  defaultSmoothing,
+  defaultField,
+  defaultUnit,
+} from "@utils/constants";
+---
+
+<div>
+  <form
+    id={controllerId}
+    onsubmit="return false;"
+    autocomplete="off"
+    style="display: inline;"
+  >
+    <div>
+      <input type="text" id="searchBox" class="searchBox" spellcheck="false" />
+    </div>
+
+    <CategorizedDropdown
+      id="scaleDropdown"
+      options={SCALES}
+      selected={defaultScale}
+    />
+
+    <CategorizedDropdown
+      id="fieldDropdown"
+      options={FIELDS}
+      selected={defaultField}
+    />
+
+    <CategorizedDropdown
+      id="unitDropdown"
+      options={UNIT_TIMES}
+      selected={defaultUnit}
+    />
+
+    <IntDropdown
+      id="smoothingDropdown"
+      options={SMOOTHINGS}
+      selected={defaultSmoothing}
+      pluralText=" smoothing"
+      style="nodisplay"
+    />
+
+    <CategorizedDropdown
+      id="smootherDropdown"
+      options={SMOOTHERS}
+      selected={defaultSmoother}
+      style="nodisplay"
+    />
+
+    <div></div>
+
+    <EpochRangePicker
+      startYear={EARLIEST_YEAR}
+      endYear={LATEST_YEAR}
+      startValueYear={2016}
+      startId="startDropdown"
+      endId="endDropdown"
+      renderAs="date"
+    />
+  </form>
+  <span style="padding-left: 0.2em"></span>
+  <InfoModal>
+    <Icon name="mingcute:question-line" slot="button" />
+    <Help />
+  </InfoModal>
+  <IconButton id="advancedButton" icon="mingcute:tool-line" />
+  <span style="padding-left: 0.75em"></span>
+  <CopyURLButton />
+  <!-- <IconButton id="copyImageButton" icon="mingcute:pic-line" /> -->
+  <!-- <span style="padding-left: 0.75em"></span> -->
+  <IconButton id="sampleQueryButton" icon="mingcute:refresh-3-line" />
+</div>
+
+<style>
+  .searchBox {
+    width: 65%;
+    height: 1.6em;
+    font-size: 18px;
+    margin-right: 0.4em;
+  }
+
+  @media (orientation: portrait) and (pointer: none),
+    (orientation: portrait) and (pointer: coarse) {
+    .searchBox {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  let a = 1;
+</script>

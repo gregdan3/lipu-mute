@@ -1,29 +1,7 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import EpochRangePicker from "@components/EpochRangePicker.astro";
-import Loader from "@components/Loader.astro";
-import Errorer from "@components/Errorer.astro";
-import IntDropdown from "@components/IntDropdown.astro";
-import CategorizedDropdown from "@components/CategorizedDropdown.astro";
-import IconButton from "@components/IconButton.astro";
-import InfoModal from "@components/InfoModal.astro";
-import Help from "@components/search/Help.mdx";
-import { Icon } from "astro-icon/components";
-
-import {
-  EARLIEST_YEAR,
-  FIELDS,
-  LATEST_YEAR,
-  SCALES,
-  SMOOTHERS,
-  SMOOTHINGS,
-  UNIT_TIMES,
-  defaultScale,
-  defaultSmoother,
-  defaultSmoothing,
-  defaultField,
-  defaultUnit,
-} from "@utils/constants";
+import Chart from "@components/chart/Chart.astro";
+import ChartController from "@components/chart/ChartController.astro";
 
 const frontmatter = { title: "ilo Muni" };
 ---
@@ -46,69 +24,48 @@ const frontmatter = { title: "ilo Muni" };
   import { FIELDS, SCALES, defaultScale } from "@utils/constants";
   import { randomQuery, copyUrlToClipboard } from "@utils/ui";
 
-  let usageCanvas: HTMLCanvasElement;
-  let searchBox: HTMLInputElement;
+  const els = {
+    usageCanvas: ["usage", HTMLCanvasElement],
+    searchBox: ["searchBox", HTMLInputElement],
 
-  let scaleDropdown: HTMLSelectElement;
-  let unitDropdown: HTMLSelectElement;
-  let fieldDropdown: HTMLSelectElement;
-  let smootherDropdown: HTMLSelectElement;
-  let smoothingDropdown: HTMLSelectElement;
+    scaleDropdown: ["scaleDropdown", HTMLSelectElement],
+    unitDropdown: ["unitDropdown", HTMLSelectElement],
+    fieldDropdown: ["fieldDropdown", HTMLSelectElement],
+    smootherDropdown: ["smootherDropdown", HTMLSelectElement],
+    smoothingDropdown: ["smoothingDropdown", HTMLSelectElement],
 
-  let startDropdown: HTMLSelectElement;
-  let endDropdown: HTMLSelectElement;
+    startDropdown: ["startDropdown", HTMLSelectElement],
+    endDropdown: ["endDropdown", HTMLSelectElement],
 
-  let loader: HTMLSpanElement;
-  let errorer: HTMLSpanElement;
-  let errorBin: HTMLDivElement;
+    loader: ["loader", HTMLSpanElement],
+    errorer: ["errorer", HTMLSpanElement],
+    errorBin: ["errorBin", HTMLDivElement],
 
-  let advancedButton: HTMLElement;
-  let sampleQueryButton: HTMLElement;
-  let copyUrlButton: HTMLElement;
+    advancedButton: ["advancedButton", HTMLElement],
+    sampleQueryButton: ["sampleQueryButton", HTMLElement],
 
-  let usageForm: HTMLFormElement;
+    usageForm: ["usageForm", HTMLFormElement],
+  } as const;
 
-  function initFetch() {
-    usageCanvas = document.getElementById("usage")! as HTMLCanvasElement;
-    searchBox = document.getElementById("searchBox")! as HTMLInputElement;
+  function getEls<T extends Record<string, readonly [string, any]>>(defs: T) {
+    const out = {} as {
+      [K in keyof T]: InstanceType<T[K][1]>;
+    };
 
-    scaleDropdown = document.getElementById(
-      "scaleDropdown",
-    )! as HTMLSelectElement;
-    unitDropdown = document.getElementById(
-      "unitDropdown",
-    )! as HTMLSelectElement;
-    fieldDropdown = document.getElementById(
-      "fieldDropdown",
-    )! as HTMLSelectElement;
-    smootherDropdown = document.getElementById(
-      "smootherDropdown",
-    )! as HTMLSelectElement;
-    smoothingDropdown = document.getElementById(
-      "smoothingDropdown",
-    )! as HTMLSelectElement;
+    for (const key in defs) {
+      const [id, Type] = defs[key];
+      const el = document.getElementById(id);
+      if (!el) throw new Error(`Missing element #${id}`);
+      out[key] = el as InstanceType<typeof Type>;
+    }
 
-    startDropdown = document.getElementById(
-      "startDropdown",
-    )! as HTMLSelectElement;
-    endDropdown = document.getElementById("endDropdown")! as HTMLSelectElement;
-
-    loader = document.getElementById("loader")! as HTMLSpanElement;
-    errorer = document.getElementById("errorer")! as HTMLSpanElement;
-    errorBin = document.getElementById("errorBin")! as HTMLDivElement;
-
-    sampleQueryButton = document.getElementById(
-      "sampleQueryButton",
-    )! as HTMLElement;
-    copyUrlButton = document.getElementById("copyUrlButton")! as HTMLElement;
-    advancedButton = document.getElementById("advancedButton")! as HTMLElement;
-
-    usageForm = document.getElementById("usageForm")! as HTMLFormElement;
+    return out;
   }
+  const $ = getEls(els);
 
   function dumpErrors(queries: Query[]) {
-    errorBin.innerHTML = "";
-    errorBin.textContent = "";
+    $.errorBin.innerHTML = "";
+    $.errorBin.textContent = "";
 
     for (const q of queries) {
       const hasErrors =
@@ -144,7 +101,7 @@ const frontmatter = { title: "ilo Muni" };
       }
 
       ul.appendChild(childUl);
-      errorBin.appendChild(ul);
+      $.errorBin.appendChild(ul);
     }
   }
 
@@ -153,39 +110,39 @@ const frontmatter = { title: "ilo Muni" };
   }
 
   async function updatePage() {
-    const queryText = searchBox.value;
-    let scale = scaleDropdown.value as Scale;
-    const field = fieldDropdown.value as Field;
-    const smoother = smootherDropdown.value as Smoother;
-    const smoothing = Number(smoothingDropdown.value);
+    const queryText = $.searchBox.value;
+    let scale = $.scaleDropdown.value as Scale;
+    const field = $.fieldDropdown.value as Field;
+    const smoother = $.smootherDropdown.value as Smoother;
+    const smoothing = Number($.smoothingDropdown.value);
 
-    let start = Number(startDropdown.value);
-    let end = Number(endDropdown.value);
+    let start = Number($.startDropdown.value);
+    let end = Number($.endDropdown.value);
 
     if (end < start) {
       [start, end] = [end, start];
-      [startDropdown.value, endDropdown.value] = [
-        endDropdown.value,
-        startDropdown.value,
+      [$.startDropdown.value, $.endDropdown.value] = [
+        $.endDropdown.value,
+        $.startDropdown.value,
       ];
     } else if (end === start) {
-      const opts = Array.from(startDropdown.options, (o) => Number(o.value));
+      const opts = Array.from($.startDropdown.options, (o) => Number(o.value));
       const idx = opts.indexOf(start);
 
       if (idx < opts.length - 1) {
         // move end to next value
         end = opts[idx + 1];
-        endDropdown.value = String(end);
+        $.endDropdown.value = String(end);
       } else if (idx > 0) {
         start = opts[idx - 1];
-        startDropdown.value = String(start);
+        $.startDropdown.value = String(start);
       }
     }
 
-    const unit = unitDropdown.value as UnitTime;
+    const unit = $.unitDropdown.value as UnitTime;
 
     const summable = FIELDS[field].summable;
-    const options = Array.from(scaleDropdown.querySelectorAll("option"));
+    const options = Array.from($.scaleDropdown.querySelectorAll("option"));
     options.forEach((option) => {
       const id = option.id as Scale | undefined;
       if (shouldDisableScale(id)) {
@@ -195,21 +152,21 @@ const frontmatter = { title: "ilo Muni" };
     // bounce user back to default scale
     if (!summable && SCALES[scale].sums) {
       scale = defaultScale;
-      scaleDropdown.value = defaultScale;
+      $.scaleDropdown.value = defaultScale;
     }
 
     if (SCALES[scale].smoothable) {
-      smootherDropdown.disabled = false;
-      smoothingDropdown.disabled = false;
+      $.smootherDropdown.disabled = false;
+      $.smoothingDropdown.disabled = false;
       // NOTE: do not disable the smoother dropdown when smoothing is 0
       // it's true that it won't do anything, but it feels Terrible UI wise
     } else {
-      smootherDropdown.disabled = true;
-      smoothingDropdown.disabled = true;
+      $.smootherDropdown.disabled = true;
+      $.smoothingDropdown.disabled = true;
     }
 
-    loader.style.visibility = "visible";
-    errorer.style.visibility = "hidden";
+    $.loader.style.visibility = "visible";
+    $.errorer.style.visibility = "hidden";
 
     let params: Params = {
       scale,
@@ -228,12 +185,12 @@ const frontmatter = { title: "ilo Muni" };
     } catch (err) {
       console.error("Couldn't update chart!", err);
 
-      errorBin.innerHTML = "";
-      errorBin.textContent = "";
-      errorBin.textContent = `Something went wrong! ${err}`;
-      errorer.style.visibility = "visible";
+      $.errorBin.innerHTML = "";
+      $.errorBin.textContent = "";
+      $.errorBin.textContent = `Something went wrong! ${err}`;
+      $.errorer.style.visibility = "visible";
     } finally {
-      loader.style.visibility = "hidden";
+      $.loader.style.visibility = "hidden";
     }
 
     // valid queries have stable syntax
@@ -245,16 +202,16 @@ const frontmatter = { title: "ilo Muni" };
     // some params get changed by the query itself
     let usedParams: Record<string, string> = {
       query: query,
-      scale: scaleDropdown.value,
-      field: fieldDropdown.value,
-      start: startDropdown.value,
-      end: endDropdown.value,
-      unit: unitDropdown.value,
+      scale: $.scaleDropdown.value,
+      field: $.fieldDropdown.value,
+      start: $.startDropdown.value,
+      end: $.endDropdown.value,
+      unit: $.unitDropdown.value,
     };
 
     if (SCALES[scale].smoothable) {
-      usedParams.smoothing = smoothingDropdown.value;
-      usedParams.smoother = smootherDropdown.value;
+      usedParams.smoothing = $.smoothingDropdown.value;
+      usedParams.smoother = $.smootherDropdown.value;
     }
 
     toURLParams(usedParams);
@@ -270,147 +227,63 @@ const frontmatter = { title: "ilo Muni" };
     await Promise.all(queryResultProms);
     const graphable = queries.filter((q) => q.data.length > 0);
     if (graphable.length > 0) {
-      await reloadUsageChart(usageCanvas, graphable, params);
+      await reloadUsageChart($.usageCanvas, graphable, params);
     }
     return queries;
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
-    initFetch();
+    // url param to element ID
+    const paramMap = {
+      query: "searchBox",
+      field: "fieldDropdown",
+      scale: "scaleDropdown",
+      smoothing: "smoothingDropdown",
+      smoother: "smootherDropdown",
+      start: "startDropdown",
+      end: "endDropdown",
+      unit: "unitDropdown",
+    } as const;
 
     let initialParams = getSearchParams();
-    // aside from query which starts empty, allow defaults of form
-    searchBox.value = initialParams.query;
-    if (initialParams.field) {
-      fieldDropdown.value = initialParams.field;
-    }
-    if (initialParams.scale) {
-      scaleDropdown.value = initialParams.scale;
-    }
-    if (initialParams.smoothing) {
-      smoothingDropdown.value = initialParams.smoothing;
-    }
-    if (initialParams.smoother) {
-      smootherDropdown.value = initialParams.smoother;
-    }
-    if (initialParams.start) {
-      startDropdown.value = initialParams.start;
-    }
-    if (initialParams.end) {
-      endDropdown.value = initialParams.end;
-    }
-    if (initialParams.unit) {
-      unitDropdown.value = initialParams.unit;
+    for (const key in paramMap) {
+      const elKey = paramMap[key];
+      const value = initialParams[key as keyof typeof initialParams];
+
+      if (value) {
+        ($[elKey] as HTMLInputElement | HTMLSelectElement).value = value;
+      }
     }
 
     // runs chart updates and such
     await updatePage();
 
     // setup reactivity
-    sampleQueryButton.addEventListener("click", async () => {
-      searchBox.value = randomQuery();
+    $.sampleQueryButton.addEventListener("click", async () => {
+      $.searchBox.value = randomQuery();
       await updatePage();
     });
-    copyUrlButton.addEventListener("click", async () => {
-      await copyUrlToClipboard();
-    });
-    advancedButton.addEventListener("click", async () => {
-      let state = smootherDropdown.className === "nodisplay";
+    $.advancedButton.addEventListener("click", async () => {
+      let state = $.smootherDropdown.className === "nodisplay";
 
       if (state) {
-        smoothingDropdown.className = "inline";
-        smootherDropdown.className = "inline";
+        $.smoothingDropdown.className = "inline";
+        $.smootherDropdown.className = "inline";
       } else {
-        smoothingDropdown.className = "nodisplay";
-        smootherDropdown.className = "nodisplay";
+        $.smoothingDropdown.className = "nodisplay";
+        $.smootherDropdown.className = "nodisplay";
       }
     });
 
-    usageForm.addEventListener("change", async () => {
+    $.usageForm.addEventListener("change", async () => {
       await updatePage();
     });
   });
 </script>
 
 <Layout frontmatter={frontmatter}>
-  <div>
-    <form
-      id="usageForm"
-      onsubmit="return false;"
-      autocomplete="off"
-      style="display: inline;"
-    >
-      <div>
-        <input type="text" id="searchBox" spellcheck="false" />
-      </div>
-
-      <CategorizedDropdown
-        id="scaleDropdown"
-        options={SCALES}
-        selected={defaultScale}
-      />
-
-      <CategorizedDropdown
-        id="fieldDropdown"
-        options={FIELDS}
-        selected={defaultField}
-      />
-
-      <CategorizedDropdown
-        id="unitDropdown"
-        options={UNIT_TIMES}
-        selected={defaultUnit}
-      />
-
-      <IntDropdown
-        id="smoothingDropdown"
-        options={SMOOTHINGS}
-        selected={defaultSmoothing}
-        pluralText=" smoothing"
-        style="nodisplay"
-      />
-
-      <CategorizedDropdown
-        id="smootherDropdown"
-        options={SMOOTHERS}
-        selected={defaultSmoother}
-        style="nodisplay"
-      />
-
-      <div></div>
-
-      <EpochRangePicker
-        startYear={EARLIEST_YEAR}
-        endYear={LATEST_YEAR}
-        startValueYear={2016}
-        startId="startDropdown"
-        endId="endDropdown"
-        renderAs="date"
-      />
-    </form>
-    <span style="padding-left: 0.2em"></span>
-    <InfoModal>
-      <Icon name="mingcute:question-line" slot="button" />
-      <Help />
-    </InfoModal>
-    <IconButton id="advancedButton" icon="mingcute:tool-line" />
-    <span style="padding-left: 0.75em"></span>
-    <IconButton id="copyUrlButton" icon="mingcute:copy-line" />
-    <!-- <IconButton id="copyImageButton" icon="mingcute:pic-line" /> -->
-    <!-- <span style="padding-left: 0.75em"></span> -->
-    <IconButton id="sampleQueryButton" icon="mingcute:refresh-3-line" />
-  </div>
-
-  <div style="position: relative; margin-top: 0.25em;">
-    <canvas id="usage" style="width: 100%;  max-height: 70vh;"></canvas>
-    <div id="usageLegend" style="margin-top: 0.75em;"></div>
-    <div
-      style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events: none;"
-    >
-      <Loader id="loader" />
-      <Errorer id="errorer" />
-    </div>
-  </div>
+  <ChartController chartId="usage" controllerId="usageForm" />
+  <Chart chartId="usage" controllerId="usageForm" />
 
   <div id="errorBin"></div>
 </Layout>
@@ -423,19 +296,5 @@ const frontmatter = { title: "ilo Muni" };
   #errorBin * {
     padding: 0;
     margin: 0;
-  }
-
-  #searchBox {
-    width: 65%;
-    height: 1.6em;
-    font-size: 18px;
-    margin-right: 0.4em;
-  }
-
-  @media (orientation: portrait) and (pointer: none),
-    (orientation: portrait) and (pointer: coarse) {
-    #searchBox {
-      width: 100%;
-    }
   }
 </style>
