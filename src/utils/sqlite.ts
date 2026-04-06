@@ -190,7 +190,7 @@ export async function resolveQuery(query: Query, params: Params) {
   }
 
   if (hasError(query)) {
-    query.data = []; // TODO: is this a good idea?
+    // query.data = []; // TODO: is this a good idea?
     // query.errors.push(makeError("NoResultsQuery", {}));
     return;
   }
@@ -206,7 +206,11 @@ export async function resolveQuery(query: Query, params: Params) {
   const totals = await fetchTotals(1, 0, params);
 
   query.data = scaleFunctions[params.scale](query.data, totals, params.field);
-  if (params.smoothing > 0 && SCALES[params.scale].smoothable) {
+  if (
+    params.smoothing > 0 &&
+    SCALES[params.scale].smoothable &&
+    UNIT_TIMES[params.unit].smoothable
+  ) {
     const smootherFunction = smootherFunctions[params.smoother];
     query.data = smootherFunction(query.data, params.smoothing, params.field);
   }
@@ -218,8 +222,8 @@ async function fetchTotals(
   params: Params,
 ): Promise<Row[]> {
   let result = await queryDb(UNIT_TIMES[params.unit].totalQuery, [
-    1, // termLen,
-    0, // attrId,
+    termLen,
+    attrId,
     params.start,
     params.end,
   ]);

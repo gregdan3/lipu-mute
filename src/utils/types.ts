@@ -82,7 +82,7 @@ export interface Params {
   query: string;
   scale: Scale;
   field: Field;
-  smoother: Smoother;
+  smoother?: Smoother;
   smoothing: number;
   start: number;
   end: number;

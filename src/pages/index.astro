@@ -22,7 +22,13 @@ const frontmatter = { title: "ilo Muni" };
   import { countQuery } from "@utils/analytics";
   import { truncateLabel } from "@utils/other.ts";
   import { FIELDS, SCALES, defaultScale } from "@utils/constants";
-  import { randomQuery, fetchElems } from "@utils/ui";
+  import {
+    randomQuery,
+    fetchElems,
+    shouldDisableScale,
+    shouldDisableSmoothing,
+  } from "@utils/ui";
+  import { consoleLogAsync } from "@utils/debug";
 
   const els = {
     usageCanvas: ["usage", HTMLCanvasElement],
@@ -91,79 +97,9 @@ const frontmatter = { title: "ilo Muni" };
     }
   }
 
-  function shouldDisableScale(id: Scale | undefined) {
-    return id && SCALES[id] && SCALES[id].sums;
-  }
-
-  async function updatePage() {
-    const query = $.searchBox.value;
-    let scale = $.scaleDropdown.value as Scale;
-    const field = $.fieldDropdown.value as Field;
-    const smoother = $.smootherDropdown.value as Smoother;
-    const smoothing = Number($.smoothingDropdown.value);
-
-    let start = Number($.startDropdown.value);
-    let end = Number($.endDropdown.value);
-
-    if (end < start) {
-      [start, end] = [end, start];
-      [$.startDropdown.value, $.endDropdown.value] = [
-        $.endDropdown.value,
-        $.startDropdown.value,
-      ];
-    } else if (end === start) {
-      const opts = Array.from($.startDropdown.options, (o) => Number(o.value));
-      const idx = opts.indexOf(start);
-
-      if (idx < opts.length - 1) {
-        // move end to next value
-        end = opts[idx + 1];
-        $.endDropdown.value = String(end);
-      } else if (idx > 0) {
-        start = opts[idx - 1];
-        $.startDropdown.value = String(start);
-      }
-    }
-
-    const unit = $.unitDropdown.value as UnitTime;
-
-    const summable = FIELDS[field].summable;
-    const options = Array.from($.scaleDropdown.querySelectorAll("option"));
-    options.forEach((option) => {
-      const id = option.id as Scale | undefined;
-      if (shouldDisableScale(id)) {
-        option.disabled = !summable;
-      }
-    });
-    // bounce user back to default scale
-    if (!summable && SCALES[scale].sums) {
-      scale = defaultScale;
-      $.scaleDropdown.value = defaultScale;
-    }
-
-    if (SCALES[scale].smoothable) {
-      $.smootherDropdown.disabled = false;
-      $.smoothingDropdown.disabled = false;
-      // NOTE: do not disable the smoother dropdown when smoothing is 0
-      // it's true that it won't do anything, but it feels Terrible UI wise
-    } else {
-      $.smootherDropdown.disabled = true;
-      $.smoothingDropdown.disabled = true;
-    }
-
+  async function updatePage(params: Params) {
     $.loader.style.visibility = "visible";
     $.errorer.style.visibility = "hidden";
-
-    let params: Params = {
-      query,
-      scale,
-      field,
-      smoother,
-      smoothing,
-      start,
-      end,
-      unit,
-    };
 
     let queries: Query[] = [];
     try {
@@ -173,7 +109,6 @@ const frontmatter = { title: "ilo Muni" };
       console.error("Couldn't update chart!", err);
 
       $.errorBin.innerHTML = "";
-      $.errorBin.textContent = "";
       $.errorBin.textContent = `Something went wrong! ${err}`;
       $.errorer.style.visibility = "visible";
     } finally {
@@ -187,18 +122,18 @@ const frontmatter = { title: "ilo Muni" };
     // technically wasteful but looks better
 
     // some params get changed by the query itself
-    let usedParams: Record<string, string> = {
+    let usedParams: Params = {
       query: queryRepr,
-      scale: $.scaleDropdown.value,
-      field: $.fieldDropdown.value,
-      start: $.startDropdown.value,
-      end: $.endDropdown.value,
-      unit: $.unitDropdown.value,
+      scale: $.scaleDropdown.value as Scale,
+      field: $.fieldDropdown.value as Field,
+      start: Number($.startDropdown.value),
+      end: Number($.endDropdown.value),
+      unit: $.unitDropdown.value as UnitTime,
     };
 
-    if (SCALES[scale].smoothable) {
-      usedParams.smoothing = $.smoothingDropdown.value;
-      usedParams.smoother = $.smootherDropdown.value;
+    if (!shouldDisableSmoothing(params.scale, params.unit)) {
+      usedParams.smoothing = Number($.smoothingDropdown.value);
+      usedParams.smoother = $.smootherDropdown.value as Smoother;
     }
 
     toURLParams(usedParams);
@@ -243,27 +178,16 @@ const frontmatter = { title: "ilo Muni" };
     }
 
     // runs chart updates and such
-    await updatePage();
+    // await updatePage();
 
     // setup reactivity
     $.sampleQueryButton.addEventListener("click", async () => {
       $.searchBox.value = randomQuery();
       await updatePage();
     });
-    $.advancedButton.addEventListener("click", async () => {
-      let state = $.smootherDropdown.className === "nodisplay";
 
-      if (state) {
-        $.smoothingDropdown.className = "inline";
-        $.smootherDropdown.className = "inline";
-      } else {
-        $.smoothingDropdown.className = "nodisplay";
-        $.smootherDropdown.className = "nodisplay";
-      }
-    });
-
-    $.usageForm.addEventListener("change", async () => {
-      await updatePage();
+    document.addEventListener("refresh-chart", async (e: CustomEvent) => {
+      await updatePage(e.detail);
     });
   });
 </script>

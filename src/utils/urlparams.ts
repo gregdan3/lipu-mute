@@ -7,7 +7,8 @@ import {
   FIELDS,
   UNIT_TIMES,
 } from "@utils/constants";
-import type { SearchURLParams, RanksURLParams } from "@utils/types";
+import type { Params, SearchURLParams, RanksURLParams } from "@utils/types";
+
 import { randomElem, isValidTimestamp } from "@utils/other";
 
 function coalesceTimestamp(maybeTimestamp: string | null): string | null {
@@ -72,11 +73,8 @@ export function getRanksParams(): RanksURLParams {
   return { termLen, year };
 }
 
-export function toURLParams(params: Record<string, string>) {
+export function toURLParams(params: Params) {
   const urlParams = new URLSearchParams();
-  // const sortedKeys = Object.keys(params).sort();
-
-  // for (const key of sortedKeys) {
   for (const key in params) {
     if (params[key]) {
       urlParams.append(key, params[key]);

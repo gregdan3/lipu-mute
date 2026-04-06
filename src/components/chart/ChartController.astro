@@ -115,5 +115,121 @@ import {
 </style>
 
 <script>
-  let a = 1;
+  import type {
+    Scale,
+    Smoother,
+    Query,
+    Field,
+    Params,
+    UnitTime,
+  } from "@utils/types";
+  import { FIELDS, SCALES, defaultScale } from "@utils/constants";
+  import {
+    randomQuery,
+    fetchElems,
+    shouldDisableScale,
+    shouldDisableSmoothing,
+  } from "@utils/ui";
+  import { consoleLogAsync } from "@utils/debug";
+
+  const els = {
+    searchBox: ["searchBox", HTMLInputElement],
+
+    scaleDropdown: ["scaleDropdown", HTMLSelectElement],
+    fieldDropdown: ["fieldDropdown", HTMLSelectElement],
+    smootherDropdown: ["smootherDropdown", HTMLSelectElement],
+    smoothingDropdown: ["smoothingDropdown", HTMLSelectElement],
+
+    startDropdown: ["startDropdown", HTMLSelectElement],
+    endDropdown: ["endDropdown", HTMLSelectElement],
+    unitDropdown: ["unitDropdown", HTMLSelectElement],
+
+    advancedButton: ["advancedButton", HTMLElement],
+    sampleQueryButton: ["sampleQueryButton", HTMLElement],
+
+    usageForm: ["usageForm", HTMLFormElement],
+  } as const;
+  const $ = fetchElems(els);
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    // if advanced button is clicked, toggle visibility of smoother/smoothing
+    $.advancedButton.addEventListener("click", async () => {
+      [$.smootherDropdown, $.smoothingDropdown].forEach((el) => {
+        el.classList.toggle("nodisplay");
+      });
+    });
+
+    $.sampleQueryButton.addEventListener("click", async () => {
+      $.searchBox.value = randomQuery();
+      // TODO: send this
+    });
+
+    $.usageForm.addEventListener("change", async () => {
+      let scale = $.scaleDropdown.value as Scale;
+      const field = $.fieldDropdown.value as Field;
+      let start = Number($.startDropdown.value);
+      let end = Number($.endDropdown.value);
+      const unit = $.unitDropdown.value as UnitTime;
+
+      // manage bounds of start/end
+      if (end < start) {
+        [start, end] = [end, start];
+        [$.startDropdown.value, $.endDropdown.value] = [
+          $.endDropdown.value,
+          $.startDropdown.value,
+        ];
+      } else if (end === start) {
+        const opts = Array.from($.startDropdown.options, (o) =>
+          Number(o.value),
+        );
+        const idx = opts.indexOf(start);
+
+        if (idx < opts.length - 1) {
+          // move end to next value
+          end = opts[idx + 1];
+          $.endDropdown.value = String(end);
+        } else if (idx > 0) {
+          start = opts[idx - 1];
+          $.startDropdown.value = String(start);
+        }
+      }
+
+      // certain scales sum
+      // in which case we have to disable them
+      // if the selected field is not summable
+      const summable = FIELDS[field].summable;
+      const options = Array.from($.scaleDropdown.querySelectorAll("option"));
+      options.forEach((option) => {
+        const id = option.id as Scale | undefined;
+        if (shouldDisableScale(id)) {
+          option.disabled = !summable;
+        }
+      });
+      // bounce user back to default scale
+      if (!summable && SCALES[scale].sums) {
+        scale = defaultScale;
+        $.scaleDropdown.value = defaultScale;
+      }
+
+      $.smootherDropdown.disabled = !shouldDisableSmoothing(scale, unit);
+      $.smoothingDropdown.disabled = !shouldDisableSmoothing(scale, unit);
+
+      // send data to main
+      document.dispatchEvent(
+        new CustomEvent("refresh-chart", {
+          detail: {
+            query: $.searchBox.value,
+            scale: $.scaleDropdown.value as Scale,
+            field: $.fieldDropdown.value as Field,
+            smoother: $.smootherDropdown.value as Smoother,
+            smoothing: Number($.smoothingDropdown.value),
+            start: Number($.startDropdown.value),
+            end: Number($.endDropdown.value),
+            unit: $.unitDropdown.value as UnitTime,
+          } as Params,
+          bubbles: true,
+        }),
+      );
+    });
+  });
 </script>

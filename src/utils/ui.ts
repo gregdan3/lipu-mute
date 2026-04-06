@@ -1,8 +1,19 @@
-import { SAMPLE_SEARCHES } from "@utils/constants";
+import type { Scale, UnitTime } from "@utils/types";
+import { SAMPLE_SEARCHES, SCALES, UNIT_TIMES } from "@utils/constants";
 import { randomElem } from "@utils/other";
 
 export function randomQuery(): string {
   return randomElem(SAMPLE_SEARCHES);
+}
+
+export function shouldDisableScale(scale: Scale | undefined) {
+  return scale && SCALES[scale] && SCALES[scale].sums;
+}
+export function shouldDisableSmoothing(
+  scale: Scale | undefined,
+  unit: UnitTime | undefined,
+) {
+  return scale && SCALES[scale].smoothable && UNIT_TIMES[unit].smoothable;
 }
 
 export async function copyUrlToClipboard() {
