@@ -42,6 +42,8 @@ export const defaultSmoother = "gauss";
 export const defaultSmoothing = "2";
 export const defaultField = "hits";
 export const defaultUnit = "month";
+export const defaultStart = makeAugust(2016).getTime() / 1000;
+export const defaultEnd = LATEST_TIMESTAMP;
 
 export const LENGTHS = ["1", "2", "3", "4", "5", "6"];
 export const SMOOTHINGS = [

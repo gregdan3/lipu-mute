@@ -83,7 +83,7 @@ export interface Params {
   scale: Scale;
   field: Field;
   smoother?: Smoother;
-  smoothing: number;
+  smoothing?: number;
   start: number;
   end: number;
   unit: UnitTime;

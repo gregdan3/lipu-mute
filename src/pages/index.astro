@@ -21,14 +21,7 @@ const frontmatter = { title: "ilo Muni" };
   import { getSearchParams, toURLParams } from "@utils/urlparams";
   import { countQuery } from "@utils/analytics";
   import { truncateLabel } from "@utils/other.ts";
-  import { FIELDS, SCALES, defaultScale } from "@utils/constants";
-  import {
-    randomQuery,
-    fetchElems,
-    shouldDisableScale,
-    shouldDisableSmoothing,
-  } from "@utils/ui";
-  import { consoleLogAsync } from "@utils/debug";
+  import { fetchElems, shouldDisableSmoothing } from "@utils/ui";
 
   const els = {
     usageCanvas: ["usage", HTMLCanvasElement],
@@ -155,37 +148,6 @@ const frontmatter = { title: "ilo Muni" };
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
-    // url param to element ID
-    const paramMap = {
-      query: "searchBox",
-      field: "fieldDropdown",
-      scale: "scaleDropdown",
-      smoothing: "smoothingDropdown",
-      smoother: "smootherDropdown",
-      start: "startDropdown",
-      end: "endDropdown",
-      unit: "unitDropdown",
-    } as const;
-
-    let initialParams = getSearchParams();
-    for (const key in paramMap) {
-      const elKey = paramMap[key];
-      const value = initialParams[key as keyof typeof initialParams];
-
-      if (value) {
-        ($[elKey] as HTMLInputElement | HTMLSelectElement).value = value;
-      }
-    }
-
-    // runs chart updates and such
-    // await updatePage();
-
-    // setup reactivity
-    $.sampleQueryButton.addEventListener("click", async () => {
-      $.searchBox.value = randomQuery();
-      await updatePage();
-    });
-
     document.addEventListener("refresh-chart", async (e: CustomEvent) => {
       await updatePage(e.detail);
     });

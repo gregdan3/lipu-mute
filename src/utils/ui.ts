@@ -2,10 +2,6 @@ import type { Scale, UnitTime } from "@utils/types";
 import { SAMPLE_SEARCHES, SCALES, UNIT_TIMES } from "@utils/constants";
 import { randomElem } from "@utils/other";
 
-export function randomQuery(): string {
-  return randomElem(SAMPLE_SEARCHES);
-}
-
 export function shouldDisableScale(scale: Scale | undefined) {
   return scale && SCALES[scale] && SCALES[scale].sums;
 }
