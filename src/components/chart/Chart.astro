@@ -1,29 +1,60 @@
 ---
+import type { Scale, Smoother, Field, Params, UnitTime } from "@utils/types";
 import Loader from "@components/Loader.astro";
 import Errorer from "@components/Errorer.astro";
+import { defaults } from "@utils/constants";
 
 export interface ChartConfig {
   chartId: string;
   controllerId?: string;
+  params: Partial<Params>;
 }
-const { chartId, controllerId } = Astro.props as ChartConfig;
+
+const {
+  chartId,
+  controllerId,
+  params: localParams = {},
+} = Astro.props as ChartConfig;
+
+const params = { ...defaults, ...localParams };
 ---
 
-<div style="position: relative; margin-top: 0.25em;">
+<usage-chart
+  data-chart-id={chartId}
+  data-controller-id={controllerId}
+  data-params={JSON.stringify(params)}
+  style="position: relative; margin-top: 0.25em;"
+>
   <canvas id={chartId} style="width: 100%;  max-height: 70vh;"></canvas>
-
   <div id=`${chartId}Legend` style="margin-top: 0.75em;">
     <div
       style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events: none;"
     >
-      <Loader id="loader" />
-      <Errorer id="errorer" />
+      <Loader id=`${chartId}Loader` />
+      <Errorer id=`${chartId}Errorer` />
     </div>
   </div>
-</div>
+</usage-chart>
 
 <style></style>
 
 <script>
-  let a = 1;
+  import { UsageChart } from "@utils/chart";
+  import type { Params } from "@utils/types";
+
+  class UsageChartElem extends HTMLElement {
+    async connectedCallback() {
+      const chartId = this.dataset.chartId!;
+      const controllerId = this.dataset.controllerId;
+      const params: Params = JSON.parse(this.dataset.params!);
+      const canvas = this.querySelector("canvas") as HTMLCanvasElement;
+      const chart = new UsageChart(canvas);
+
+      if (params.query) {
+        let queries = await chart.update(params);
+      }
+    }
+  }
+
+  customElements.define("usage-chart", UsageChartElem);
 </script>

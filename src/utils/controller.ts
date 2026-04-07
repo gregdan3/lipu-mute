@@ -8,6 +8,7 @@ import {
   shouldDisableSmoothing,
 } from "@utils/ui";
 import { randomElem } from "@utils/other";
+import { countQuery } from "@utils/analytics";
 
 // constants expected when the chartController exists
 export const CONTROLLER_ELEMENTS = {
@@ -135,11 +136,15 @@ function controllerUpdated() {
 
   // send data to main
   document.dispatchEvent(
-    new CustomEvent("refresh-chart", {
+    new CustomEvent("chart-controller-updated", {
       detail: params,
       bubbles: true,
     }),
   );
+
+  // TODO: does the act of querying
+  // toURLParams(params);
+  // countQuery();
 }
 
 export function initializeController() {

@@ -15,13 +15,12 @@ const frontmatter = { title: "ilo Muni" };
     Params,
     UnitTime,
   } from "@utils/types";
-  import { parseInput, hasError } from "@utils/input";
-  import { reloadUsageChart } from "@utils/chart";
-  import { resolveQuery } from "@utils/sqlite";
-  import { getSearchParams, toURLParams } from "@utils/urlparams";
-  import { countQuery } from "@utils/analytics";
+  import { hasError } from "@utils/input.ts";
+  import { UsageChart } from "@utils/chart.ts";
+  import { toURLParams } from "@utils/urlparams.ts";
   import { truncateLabel } from "@utils/other.ts";
-  import { fetchElems, shouldDisableSmoothing } from "@utils/ui";
+  import { fetchElems } from "@utils/ui.ts";
+  import { countQuery } from "@utils/analytics.ts";
 
   const els = {
     usageCanvas: ["usage", HTMLCanvasElement],
@@ -36,12 +35,9 @@ const frontmatter = { title: "ilo Muni" };
     startDropdown: ["startDropdown", HTMLSelectElement],
     endDropdown: ["endDropdown", HTMLSelectElement],
 
-    loader: ["loader", HTMLSpanElement],
-    errorer: ["errorer", HTMLSpanElement],
+    loader: ["usageLoader", HTMLSpanElement],
+    errorer: ["usageErrorer", HTMLSpanElement],
     errorBin: ["errorBin", HTMLDivElement],
-
-    advancedButton: ["advancedButton", HTMLElement],
-    sampleQueryButton: ["sampleQueryButton", HTMLElement],
 
     usageForm: ["usageForm", HTMLFormElement],
   } as const;
@@ -90,13 +86,13 @@ const frontmatter = { title: "ilo Muni" };
     }
   }
 
-  async function updatePage(params: Params) {
+  async function updatePage(chart: UsageChart, params: Params) {
     $.loader.style.visibility = "visible";
     $.errorer.style.visibility = "hidden";
 
     let queries: Query[] = [];
     try {
-      queries = await updateChart(params);
+      queries = await chart.update(params);
       dumpErrors(queries);
     } catch (err) {
       console.error("Couldn't update chart!", err);
@@ -108,49 +104,35 @@ const frontmatter = { title: "ilo Muni" };
       $.loader.style.visibility = "hidden";
     }
 
-    // valid queries have stable syntax
+    // valid queries have stable syntax, and errors are removed
     let queryReprs = queries.filter((q) => !hasError(q)).map((q) => q.repr);
-    // errors are removed
-    let queryRepr = queryReprs.join(", ");
     // technically wasteful but looks better
+    let queryRepr = queryReprs.join(", ");
 
     // some params get changed by the query itself
     let usedParams: Params = {
       query: queryRepr,
       scale: $.scaleDropdown.value as Scale,
       field: $.fieldDropdown.value as Field,
+      smoother: $.smootherDropdown.value as Smoother,
+      smoothing: Number($.smoothingDropdown.value),
       start: Number($.startDropdown.value),
       end: Number($.endDropdown.value),
       unit: $.unitDropdown.value as UnitTime,
     };
 
-    if (!shouldDisableSmoothing(params.scale, params.unit)) {
-      usedParams.smoothing = Number($.smoothingDropdown.value);
-      usedParams.smoother = $.smootherDropdown.value as Smoother;
-    }
-
     toURLParams(usedParams);
-
     countQuery();
   }
 
-  async function updateChart(params: Params): Promise<Query[]> {
-    const queries = await parseInput(params.query);
-    const queryResultProms = queries.map((query) =>
-      resolveQuery(query, params),
-    );
-    await Promise.all(queryResultProms);
-    const graphable = queries.filter((q) => q.data.length > 0);
-    if (graphable.length > 0) {
-      await reloadUsageChart($.usageCanvas, graphable, params);
-    }
-    return queries;
-  }
-
   document.addEventListener("DOMContentLoaded", async () => {
-    document.addEventListener("refresh-chart", async (e: CustomEvent) => {
-      await updatePage(e.detail);
-    });
+    let chart = new UsageChart($.usageCanvas);
+    document.addEventListener(
+      "chart-controller-updated",
+      async (e: CustomEvent<Params>) => {
+        await updatePage(chart, e.detail);
+      },
+    );
   });
 </script>
 

@@ -2,6 +2,8 @@ import { htmlLegendPlugin, crossHairPlugin } from "@utils/plugins";
 import { FORMATTERS } from "@utils/ui.ts";
 import { FIELDS, SCALES } from "@utils/constants.ts";
 import { truncateLabel } from "@utils/other.ts";
+import { parseInput, hasError } from "@utils/input";
+import { resolveQuery } from "@utils/sqlite";
 import type {
   ScaleData,
   FormatterFn,
@@ -13,31 +15,64 @@ import type {
 import type { ChartTypeRegistry, TooltipItem } from "chart.js/auto";
 import Chart from "chart.js/auto";
 import "chartjs-adapter-date-fns";
+import { defaults } from "@utils/constants";
 
-let existingChart: Chart<keyof ChartTypeRegistry, Row[], unknown> | null = null;
+export class UsageChart {
+  private chart: Chart<keyof ChartTypeRegistry, Row[], unknown> | null = null;
+  private canvas: HTMLCanvasElement;
 
-async function initUsageChart(
-  canvas: HTMLCanvasElement,
-  data: Query[],
-  params: Params,
-  epsilon: number,
-) {
-  const scale = SCALES[params.scale];
-  const field = params.field;
+  constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+  }
 
-  const chart = new Chart(canvas, {
-    type: "line",
-    data: {
-      datasets: data.map((q) => ({
-        label: q.repr,
-        data: q.data,
-      })),
-    },
-    plugins: [htmlLegendPlugin, crossHairPlugin],
-    options: {
+  // it's caller's responsibility to ensure that Params is coherent
+  async update(params: Partial<Params>): Promise<Query[]> {
+    params = { ...defaults, ...params };
+
+    const queries = await parseInput(params.query);
+    await Promise.all(queries.map((query) => resolveQuery(query, params)));
+
+    const graphable = queries.filter((q) => q.data.length > 0 && !hasError(q));
+
+    let epsilon = 0;
+    if (SCALES[params.scale].axis === "logarithmic") {
+      epsilon = adjustZeroLogScale(graphable, params.field);
+    }
+
+    const datasets = await this.buildData(graphable);
+    const options = await this.buildConfig(params, epsilon);
+
+    if (!this.chart) {
+      this.chart = new Chart(this.canvas, {
+        type: "line",
+        data: { datasets },
+        options,
+        plugins: [htmlLegendPlugin, crossHairPlugin],
+      });
+      return queries;
+    }
+
+    this.chart.data.datasets = datasets;
+    this.chart.options = options;
+    this.chart.update();
+
+    return queries;
+  }
+
+  async buildData(queries: Query[]) {
+    return queries.map((q) => ({
+      label: q.repr,
+      data: q.data,
+    }));
+  }
+
+  async buildConfig(params: Params, epsilon: number) {
+    const scale = SCALES[params.scale];
+    const field = params.field;
+
+    const config = {
       responsive: true,
       animation: false,
-      // animation: { duration: 200, easing: "easeInOutCubic" },
       line: {
         datasets: { normalized: true },
       },
@@ -123,20 +158,6 @@ async function initUsageChart(
         htmlLegend: {
           containerID: "usageLegend",
         },
-        // annotation: {
-        //   annotations: {
-        //     label1: {
-        //       type: "label",
-        //       xValue: "50%",
-        //       yValue: "50%",
-        //       backgroundColor: "rgba(245,245,245)",
-        //       content: ["This is my text", "This is my text, second line"],
-        //       font: {
-        //         size: 18,
-        //       },
-        //     },
-        //   },
-        // },
         tooltip: {
           mode: "nearest",
           axis: "x",
@@ -161,9 +182,9 @@ async function initUsageChart(
           },
         },
       },
-    },
-  });
-  return chart;
+    };
+    return config;
+  }
 }
 
 function adjustZeroLogScale(queries: Query[], field: Field) {
@@ -184,7 +205,7 @@ function adjustZeroLogScale(queries: Query[], field: Field) {
     epsilon = 1e-9;
   }
 
-  // Apply epsilon uniformly to all queries
+  // push all queries' data up by epsilon
   for (const query of queries) {
     query.data = query.data.map((d) => ({
       ...d,
@@ -207,37 +228,4 @@ function formatLabel(
   const truncLabel = truncateLabel(ctx.dataset.label!);
   const label = `${truncLabel}: ${formattedData} ${field}`;
   return label;
-}
-
-export async function reloadUsageChart(
-  canvas: HTMLCanvasElement,
-  queries: Query[],
-  params: Params,
-) {
-  const scale = SCALES[params.scale];
-  const field = params.field;
-
-  let epsilon = 0;
-  if (scale.axis === "logarithmic") {
-    epsilon = adjustZeroLogScale(queries, field);
-  }
-
-  if (!existingChart) {
-    existingChart = await initUsageChart(canvas, queries, params, epsilon);
-  } else {
-    existingChart.data.datasets = queries.map((q) => ({
-      label: q.repr,
-      data: q.data,
-    }));
-    // @ts-expect-error: value can apparently be `false` but it never is
-    existingChart.options.parsing!.yAxisKey! = field;
-    existingChart.options.scales!.y!.type = scale.axis;
-    // @ts-expect-error: value can apparently be string but it never is
-    existingChart.options.scales!.y!.ticks!.callback =
-      FORMATTERS[scale.axisNums];
-    existingChart.options.plugins!.tooltip!.callbacks!.label = (
-      ctx: TooltipItem<keyof ChartTypeRegistry>,
-    ) => formatLabel(ctx, FORMATTERS[scale.tooltipNums], epsilon);
-    existingChart.update();
-  }
 }

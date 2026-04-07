@@ -45,6 +45,16 @@ export const defaultUnit = "month";
 export const defaultStart = makeAugust(2016).getTime() / 1000;
 export const defaultEnd = LATEST_TIMESTAMP;
 
+export const defaults = {
+  field: defaultField,
+  scale: defaultScale,
+  smoother: defaultSmoother,
+  smoothing: defaultSmoothing,
+  start: defaultStart,
+  end: defaultEnd,
+  unit: defaultUnit,
+};
+
 export const LENGTHS = ["1", "2", "3", "4", "5", "6"];
 export const SMOOTHINGS = [
   "0",
