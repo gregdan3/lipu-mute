@@ -104,14 +104,12 @@ const frontmatter = { title: "ilo Muni" };
       $.loader.style.visibility = "hidden";
     }
 
-    // valid queries have stable syntax, and errors are removed
-    let queryReprs = queries.filter((q) => !hasError(q)).map((q) => q.repr);
-    // technically wasteful but looks better
-    let queryRepr = queryReprs.join(", ");
+    const graphable = queries.filter((q) => !hasError(q));
+    const query = graphable.map((q) => q.repr).join(", ");
 
     // some params get changed by the query itself
     let usedParams: Params = {
-      query: queryRepr,
+      query,
       scale: $.scaleDropdown.value as Scale,
       field: $.fieldDropdown.value as Field,
       smoother: $.smootherDropdown.value as Smoother,
@@ -121,8 +119,10 @@ const frontmatter = { title: "ilo Muni" };
       unit: $.unitDropdown.value as UnitTime,
     };
 
-    toURLParams(usedParams);
-    countQuery();
+    if (graphable.length > 0) {
+      toURLParams(usedParams);
+      countQuery();
+    }
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
