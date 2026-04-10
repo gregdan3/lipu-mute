@@ -9,6 +9,8 @@ import inline from "@playform/inline";
 
 import icon from "astro-icon";
 
+import svelte from "@astrojs/svelte";
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://ilo.muni.la/",
@@ -28,6 +30,7 @@ export default defineConfig({
     inline(),
     robotsTxt(),
     compress(),
+    svelte(),
   ],
   markdown: {
     remarkPlugins: [
