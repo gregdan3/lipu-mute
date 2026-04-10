@@ -66,8 +66,8 @@ export const htmlLegendPlugin = {
 
       // Color box
       const boxSpan = document.createElement("span");
-      boxSpan.style.background = item.fillStyle?.toString()!;
-      boxSpan.style.borderColor = item.strokeStyle?.toString()!;
+      boxSpan.style.background = item.fillStyle!.toString()!;
+      boxSpan.style.borderColor = item.strokeStyle!.toString()!;
       boxSpan.style.borderWidth = item.lineWidth + "px";
       boxSpan.style.display = "inline-block";
       boxSpan.style.flexShrink = "0";
