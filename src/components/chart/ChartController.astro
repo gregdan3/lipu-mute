@@ -30,7 +30,7 @@ import {
 } from "@utils/constants";
 ---
 
-<div>
+<div class="controller">
   <form
     id={controllerId}
     onsubmit="return false;"
@@ -74,7 +74,7 @@ import {
       style="nodisplay"
     />
 
-    <div></div>
+    <div class="splitter"></div>
 
     <EpochRangePicker
       startYear={EARLIEST_YEAR}
@@ -104,6 +104,12 @@ import {
     height: 1.6em;
     font-size: 18px;
     margin-right: 0.4em;
+  }
+
+  .searchBox,
+  .controller,
+  .splitter {
+    margin-bottom: 0.25rem;
   }
 
   @media (orientation: portrait) and (pointer: none),
