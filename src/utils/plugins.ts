@@ -10,7 +10,9 @@ import { truncateLabel } from "@utils/other.ts";
 
 // i slapped a bunch of ignores in here because it's chart.js's code
 const getOrCreateLegendList = (chart: Chart, id: string) => {
-  const legendContainer = document.getElementById(id)!;
+  const legendContainer = document.getElementById(id);
+  if (!legendContainer) return null;
+
   let listContainer = legendContainer.querySelector("ul");
 
   if (!listContainer) {
@@ -31,6 +33,7 @@ export const htmlLegendPlugin = {
   id: "htmlLegend",
   afterUpdate(chart: Chart, args: any, options: any) {
     const ul = getOrCreateLegendList(chart, options.containerID);
+    if (!ul) return;
 
     // Remove old legend items
     while (ul.firstChild) {
