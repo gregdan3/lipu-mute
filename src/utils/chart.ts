@@ -62,6 +62,7 @@ export class UsageChart {
   async buildConfig(params: Params, epsilon: number) {
     const scale = SCALES[params.scale];
     const field = params.field;
+    const useHtmlLegend = !!document.getElementById("usageLegend");
 
     const config = {
       responsive: true,
@@ -145,7 +146,7 @@ export class UsageChart {
       },
       plugins: {
         legend: {
-          display: false,
+          display: !useHtmlLegend,
         },
         // @ts-expect-error: registration can't fix inline config
         htmlLegend: {
