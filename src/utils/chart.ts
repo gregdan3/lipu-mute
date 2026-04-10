@@ -4,14 +4,7 @@ import { FIELDS, SCALES } from "@utils/constants.ts";
 import { truncateLabel } from "@utils/other.ts";
 import { parseInput, hasError } from "@utils/input";
 import { resolveQuery } from "@utils/sqlite";
-import type {
-  ScaleData,
-  FormatterFn,
-  Field,
-  Row,
-  Query,
-  Params,
-} from "@utils/types";
+import type { FormatterFn, Field, Row, Query, Params } from "@utils/types";
 import type { ChartTypeRegistry, TooltipItem } from "chart.js/auto";
 import Chart from "chart.js/auto";
 import "chartjs-adapter-date-fns";
@@ -228,4 +221,20 @@ function formatLabel(
   const truncLabel = truncateLabel(ctx.dataset.label!);
   const label = `${truncLabel}: ${formattedData} ${field}`;
   return label;
+}
+
+export class UsageChartElem extends HTMLElement {
+  chart: UsageChart | null = null;
+
+  async connectedCallback() {
+    const params: Params = JSON.parse(this.dataset.params!);
+    const canvas = this.querySelector("canvas") as HTMLCanvasElement;
+    this.chart = new UsageChart(canvas);
+
+    // chart was constructed with a Params
+    // set up initial query
+    if (params.query) {
+      await this.chart.update(params);
+    }
+  }
 }

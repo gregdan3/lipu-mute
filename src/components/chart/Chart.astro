@@ -1,5 +1,5 @@
 ---
-import type { Scale, Smoother, Field, Params, UnitTime } from "@utils/types";
+import type { Params } from "@utils/types";
 import Loader from "@components/Loader.astro";
 import Errorer from "@components/Errorer.astro";
 import { defaults } from "@utils/constants";
@@ -7,7 +7,7 @@ import { defaults } from "@utils/constants";
 export interface ChartConfig {
   chartId: string;
   controllerId?: string;
-  params: Partial<Params>;
+  params?: Partial<Params>;
 }
 
 const {
@@ -16,7 +16,10 @@ const {
   params: localParams = {},
 } = Astro.props as ChartConfig;
 
-const params = { ...defaults, ...localParams };
+let params = {};
+if (localParams.query) {
+  params = { ...defaults, ...localParams };
+}
 ---
 
 <usage-chart
@@ -39,22 +42,7 @@ const params = { ...defaults, ...localParams };
 <style></style>
 
 <script>
-  import { UsageChart } from "@utils/chart";
-  import type { Params } from "@utils/types";
-
-  class UsageChartElem extends HTMLElement {
-    async connectedCallback() {
-      const chartId = this.dataset.chartId!;
-      const controllerId = this.dataset.controllerId;
-      const params: Params = JSON.parse(this.dataset.params!);
-      const canvas = this.querySelector("canvas") as HTMLCanvasElement;
-      const chart = new UsageChart(canvas);
-
-      if (params.query) {
-        let queries = await chart.update(params);
-      }
-    }
-  }
+  import { UsageChartElem } from "@utils/chart";
 
   customElements.define("usage-chart", UsageChartElem);
 </script>
