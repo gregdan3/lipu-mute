@@ -26,6 +26,10 @@ export class UsageChart {
     await Promise.all(queries.map((query) => resolveQuery(query, params)));
 
     const graphable = queries.filter((q) => q.data.length > 0 && !hasError(q));
+    // don't update the page if there are no graphable queries
+    if (graphable.length === 0) {
+      return queries;
+    }
 
     let epsilon = 0;
     if (SCALES[params.scale].axis === "logarithmic") {
