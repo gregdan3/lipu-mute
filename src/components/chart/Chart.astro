@@ -8,12 +8,14 @@ export interface ChartConfig {
   chartId: string;
   controllerId?: string;
   params?: Partial<Params>;
+  large?: boolean;
 }
 
 const {
   chartId,
   controllerId,
   params: localParams = {},
+  large = false,
 } = Astro.props as ChartConfig;
 
 let params = {};
@@ -26,20 +28,55 @@ if (localParams.query) {
   data-chart-id={chartId}
   data-controller-id={controllerId}
   data-params={JSON.stringify(params)}
-  style="position: relative; margin-top: 0.25em;"
+  class={large ? "chart chart-large" : "chart chart-small"}
 >
-  <canvas id={chartId} style="width: 100%;  max-height: 70vh;"></canvas>
-  <div id=`${chartId}Legend` style="margin-top: 0.75em;">
-    <div
-      style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events: none;"
-    >
-      <Loader id=`${chartId}Loader` />
-      <Errorer id=`${chartId}Errorer` />
+  <div class="chart-container">
+    <canvas id={chartId}></canvas>
+
+    <div class="chart-overlay">
+      <Loader id={`${chartId}Loader`} />
+      <Errorer id={`${chartId}Errorer`} />
     </div>
   </div>
+
+  <div id={`${chartId}Legend`} style="margin-top: 0.75em;"></div>
 </usage-chart>
 
-<style></style>
+<style>
+  .chart {
+    margin: 0.75em auto;
+  }
+
+  .chart-container {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .chart-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .chart-small .chart-container {
+    max-height: 400px;
+    aspect-ratio: 21 / 9;
+  }
+
+  .chart-large .chart-container {
+    aspect-ratio: 2 / 1;
+    max-height: 60vh;
+  }
+</style>
 
 <script>
   import { UsageChartElem } from "@utils/chart";

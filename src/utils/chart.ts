@@ -66,6 +66,7 @@ export class UsageChart {
 
     const config = {
       responsive: true,
+      maintainAspectRatio: false,
       animation: false,
       line: {
         datasets: { normalized: true },
