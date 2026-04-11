@@ -86,11 +86,13 @@ import { BASE_URL } from "@utils/constants";
         </nav>
       </header>
 
-      <main>
-        <div class="spacer"></div>
+      <div id="mainWrap">
+        <main>
+          <div class="spacer"></div>
 
-        <slot />
-      </main>
+          <slot />
+        </main>
+      </div>
       <footer>
         <div class="license">
           <div>
@@ -109,8 +111,8 @@ import { BASE_URL } from "@utils/constants";
             <a href="/LICENSE.CC-BY-SA-4.0.txt">CC BY-SA-4.0</a>
           </div>
           <div>
-            See also <a href="https://nasin.nimi.li/charts">nasin.nimi.li</a> by
-            ilo Tani and <a href="https://acipensersturio.github.io/poka-muni/"
+            See also <a href="https://nasin.nimi.li/charts">nasin.nimi.li</a> by ilo
+            Tani and <a href="https://acipensersturio.github.io/poka-muni/"
               >poka Muni</a
             >
             by kala Asi
@@ -180,7 +182,7 @@ import { BASE_URL } from "@utils/constants";
     flex: 1;
     margin: 0 auto 0 auto;
     padding: 3%;
-    padding-top: 1%;
+    padding-top: 0.5%;
     background: var(--prim-bg);
     color: var(--prim-fg);
     box-shadow:
@@ -188,14 +190,14 @@ import { BASE_URL } from "@utils/constants";
       0 15px 40px rgba(0, 0, 0, 0.05);
   }
 
+  #mainWrap {
+    flex: 1;
+    /* margin: 0.5rem; */
+  }
   main {
     flex: 1;
     line-height: 1.5em;
-    width: 85vw;
     min-width: 85vw;
-  }
-  canvas {
-    max-width: 90vw;
   }
   header {
     position: relative;
@@ -225,7 +227,7 @@ import { BASE_URL } from "@utils/constants";
     display: flex;
     margin-left: auto;
     margin-right: auto;
-    gap: 6%;
+    gap: 8%;
   }
   nav a {
     border: 0.3em outset lightgray;
@@ -234,7 +236,6 @@ import { BASE_URL } from "@utils/constants";
     box-shadow: 0.15em 0.15em 0 0 rgba(0, 0, 0, 1);
   }
   nav > a:hover {
-    font-weight: 1000;
     box-shadow: 0.25em 0.25em 0 0 rgba(0, 0, 0, 1);
   }
   nav > a:active {
@@ -246,11 +247,9 @@ import { BASE_URL } from "@utils/constants";
   footer {
     font-size: 0.75em;
     line-height: 1em;
-    margin-bottom: 1em;
   }
 
   .license {
-    margin-top: 0.5em;
     text-align: center;
     line-height: 1.8em;
   }
@@ -258,7 +257,7 @@ import { BASE_URL } from "@utils/constants";
     display: flex;
     justify-content: center;
     gap: 3%;
-    margin-top: 0.5em;
+    margin-top: 0.75em;
   }
 
   code {
