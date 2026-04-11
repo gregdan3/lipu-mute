@@ -25,17 +25,10 @@ export const createEnumValidator =
 
 export type Stringable = string | number | boolean | bigint | symbol;
 
-export const lengths = LENGTHS.map((n: string): number => {
-  return parseInt(n, 10);
-});
-export const smoothings = SMOOTHINGS.map((n: string): number => {
-  return parseInt(n, 10);
-});
-
 // user input
 export type Operator = "+" | "-";
 
-export type Length = (typeof lengths)[number];
+export type Length = (typeof LENGTHS)[number];
 export type Attribute = keyof typeof ATTRIBUTES;
 export type AttributeId = (typeof ATTRIBUTES)[Attribute];
 export type Formatter = keyof typeof FORMATTERS;
