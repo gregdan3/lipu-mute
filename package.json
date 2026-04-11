@@ -40,6 +40,7 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-plugin-annotation": "^3.1.0",
     "date-fns": "^3.6.0",
+    "dom-to-image-more": "^3.7.2",
     "remark-toc": "^9.0.0",
     "sql.js": "^1.14.1",
     "sql.js-httpvfs": "^0.8.12",

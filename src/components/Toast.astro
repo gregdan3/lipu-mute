@@ -1,0 +1,52 @@
+---
+export interface Props {}
+
+const {} = Astro.props;
+---
+
+<div id="toast"></div>
+
+<style>
+  #toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    padding: 8px 12px;
+    background: black;
+    color: white;
+    border-radius: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 150ms ease,
+      transform 150ms ease;
+  }
+
+  #toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+
+<script>
+  const el = document.getElementById("toast");
+  let timeoutId = null;
+
+  function show(message: string) {
+    if (!el) return;
+    el.textContent = message;
+    el.classList.add("visible");
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      el.classList.remove("visible");
+    }, 1500);
+  }
+
+  document.addEventListener("show-toast", (e: CustomEvent) => {
+    show(e.detail.message);
+  });
+</script>

@@ -8,10 +8,15 @@ import IconButton from "@components/IconButton.astro";
 
 <script>
   import { copyUrlToClipboard } from "@utils/ui";
-
-  document.querySelectorAll("[data-copy-url-button]").forEach((container) => {
-    container.addEventListener("click", async () => {
+  const el = document.querySelector("[data-copy-url-button]");
+  if (el) {
+    el.addEventListener("click", async () => {
       await copyUrlToClipboard();
+      document.dispatchEvent(
+        new CustomEvent("show-toast", {
+          detail: { message: "Copied URL to clipboard" },
+        }),
+      );
     });
-  });
+  }
 </script>

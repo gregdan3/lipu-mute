@@ -3,6 +3,8 @@ import Layout from "@layouts/Layout.astro";
 import Chart from "@components/chart/Chart.astro";
 import ChartController from "@components/chart/ChartController.astro";
 
+import Toast from "@components/Toast.astro";
+
 const frontmatter = { title: "ilo Muni" };
 ---
 
@@ -142,6 +144,8 @@ const frontmatter = { title: "ilo Muni" };
   <Chart large={true} chartId="usage" controllerId="usageForm" />
 
   <div id="errorBin"></div>
+
+  <Toast />
 </Layout>
 
 <style>

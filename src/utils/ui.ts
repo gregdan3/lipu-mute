@@ -1,6 +1,6 @@
+import domtoimage from "dom-to-image-more";
 import type { Scale, UnitTime } from "@utils/types";
 import { SAMPLE_SEARCHES, SCALES, UNIT_TIMES } from "@utils/constants";
-import { randomElem } from "@utils/other";
 
 export function shouldDisableScale(scale: Scale | undefined) {
   return scale && SCALES[scale] && SCALES[scale].sums;
@@ -33,6 +33,34 @@ export async function copyUrlToClipboard() {
       textArea.remove();
     }
   }
+}
+
+export async function handleGraphImageRequest() {
+  const main = document.querySelector("main");
+  if (!main) return;
+
+  const blob = await domtoimage.toBlob(main, {
+    bgcolor: "white",
+  });
+
+  if (!blob) return;
+
+  // const item = new ClipboardItem({
+  //   "image/png": blob,
+  // });
+  //
+  // await navigator.clipboard.write([item]);
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `ilo-muni-${new Date().toISOString()}.png`;
+  document.body.appendChild(a);
+
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 export function fetchElems<T extends Record<string, readonly [string, any]>>(

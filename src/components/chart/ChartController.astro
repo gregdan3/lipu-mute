@@ -6,6 +6,7 @@ export interface ControllerConfig {
 const { chartId, controllerId } = Astro.props as ControllerConfig;
 
 import CopyURLButton from "@components/CopyURLButton.astro";
+import DownloadImageButton from "@components/DownloadImageButton.astro";
 import IntDropdown from "@components/IntDropdown.astro";
 import CategorizedDropdown from "@components/CategorizedDropdown.astro";
 import EpochRangePicker from "@components/EpochRangePicker.astro";
@@ -93,7 +94,7 @@ import {
   <IconButton id="advancedButton" icon="mingcute:tool-line" />
   <span style="padding-left: 0.75em"></span>
   <CopyURLButton />
-  <!-- <IconButton id="copyImageButton" icon="mingcute:pic-line" /> -->
+  <DownloadImageButton />
   <!-- <span style="padding-left: 0.75em"></span> -->
   <IconButton id="sampleQueryButton" icon="mingcute:refresh-3-line" />
 </div>
