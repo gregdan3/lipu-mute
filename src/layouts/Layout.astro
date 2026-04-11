@@ -79,20 +79,18 @@ import { BASE_URL } from "@utils/constants";
         </a>
         <nav>
           <a href=`${BASE_URL}/`>Search</a>
-          <a href=`${BASE_URL}/blog`>Blog</a>
+          <!-- <a href=`${BASE_URL}/blog`>Blog</a> -->
           <!-- <a href=`${BASE_URL}/ranks`>Ranks</a> -->
-          <!-- <a href=`${BASE_URL}/blog/about`>About</a> -->
+          <a href=`${BASE_URL}/blog/about`>About</a>
           <a href=`${BASE_URL}/blog/help`>Help!</a>
         </nav>
       </header>
 
-      <div id="mainWrap">
-        <main>
-          <div class="spacer"></div>
+      <main>
+        <div class="spacer"></div>
 
-          <slot />
-        </main>
-      </div>
+        <slot />
+      </main>
       <footer>
         <div class="license">
           <div>
@@ -190,14 +188,11 @@ import { BASE_URL } from "@utils/constants";
       0 15px 40px rgba(0, 0, 0, 0.05);
   }
 
-  #mainWrap {
-    flex: 1;
-    /* margin: 0.5rem; */
-  }
   main {
     flex: 1;
     line-height: 1.5em;
     min-width: 85vw;
+    max-width: 50vw;
   }
   header {
     position: relative;
@@ -382,7 +377,7 @@ import { BASE_URL } from "@utils/constants";
       font-size: 16px;
     }
     .design {
-      max-width: 100%;
+      max-width: 100vw;
       padding: 5%;
       padding-top: 1%;
       margin: 0;
