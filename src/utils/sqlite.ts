@@ -6,6 +6,7 @@ import {
   LATEST_TIMESTAMP,
   EARLIEST_TIMESTAMP,
   UNIT_TIMES,
+  defaultSmoother,
 } from "@utils/constants";
 import type {
   Length,
@@ -207,11 +208,14 @@ export async function resolveQuery(query: Query, params: Params) {
 
   query.data = scaleFunctions[params.scale](query.data, totals, params.field);
   if (
+    !!params.smoothing &&
     params.smoothing > 0 &&
     SCALES[params.scale].smoothable &&
     UNIT_TIMES[params.unit].smoothable
   ) {
-    const smootherFunction = smootherFunctions[params.smoother];
+    const smootherFunction = params.smoother
+      ? smootherFunctions[params.smoother]
+      : smootherFunctions[defaultSmoother];
     query.data = smootherFunction(query.data, params.smoothing, params.field);
   }
 }

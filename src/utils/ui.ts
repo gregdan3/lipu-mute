@@ -1,6 +1,7 @@
+// @ts-expect-error: no types for -more module
 import domtoimage from "dom-to-image-more";
 import type { Scale, UnitTime } from "@utils/types";
-import { SAMPLE_SEARCHES, SCALES, UNIT_TIMES } from "@utils/constants";
+import { SCALES, UNIT_TIMES } from "@utils/constants";
 
 export function shouldDisableScale(scale: Scale | undefined) {
   return scale && SCALES[scale] && SCALES[scale].sums;
@@ -9,7 +10,9 @@ export function shouldDisableSmoothing(
   scale: Scale | undefined,
   unit: UnitTime | undefined,
 ) {
-  return scale && SCALES[scale].smoothable && UNIT_TIMES[unit].smoothable;
+  return (
+    !!scale && !!unit && SCALES[scale].smoothable && UNIT_TIMES[unit].smoothable
+  );
 }
 
 export async function copyUrlToClipboard() {

@@ -1,7 +1,6 @@
 import {
   SCALES,
   SMOOTHERS,
-  LENGTHS,
   SMOOTHINGS,
   SAMPLE_SEARCHES,
   FIELDS,
@@ -18,14 +17,13 @@ import type {
   Scale,
   Field,
   Params,
-  RanksURLParams,
   UnitTime,
   Smoother,
   Smoothing,
 } from "@utils/types";
 import { createEnumValidator } from "@utils/types";
 
-import { randomElem, isValidTimestamp } from "@utils/other";
+import { randomElem } from "@utils/other";
 
 const validateScale = createEnumValidator(Object.keys(SCALES));
 const validateField = createEnumValidator(Object.keys(FIELDS));
@@ -34,16 +32,6 @@ const validateSmoother = createEnumValidator(Object.keys(SMOOTHERS));
 const validateSmoothing = createEnumValidator(
   SMOOTHINGS.map((n) => n.toString()),
 );
-
-function coalesceTimestamp(
-  maybeTimestamp: string | null,
-  fallback: string | null = null,
-): string | null {
-  if (!maybeTimestamp || !isValidTimestamp(maybeTimestamp)) {
-    return fallback;
-  }
-  return maybeTimestamp;
-}
 
 function getParam<T>(
   value: string | null,
@@ -87,7 +75,7 @@ export function getSearchParams(): Params {
       validateSmoothing,
       defaultSmoothing.toString(),
     ),
-  );
+  ) as Smoothing;
   const start = parseTimestamp(url.get("start"), defaultStart) as number;
   const end = parseTimestamp(url.get("end"), defaultEnd) as number;
 

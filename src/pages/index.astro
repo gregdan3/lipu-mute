@@ -18,7 +18,7 @@ const frontmatter = { title: "ilo Muni" };
     UnitTime,
   } from "@utils/types";
   import { hasError } from "@utils/input.ts";
-  import { UsageChart } from "@utils/chart.ts";
+  import { UsageChart, UsageChartElem } from "@utils/chart.ts";
   import { toURLParams } from "@utils/urlparams.ts";
   import { truncateLabel } from "@utils/other.ts";
   import { fetchElems } from "@utils/ui.ts";
@@ -128,8 +128,8 @@ const frontmatter = { title: "ilo Muni" };
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
-    const elem = document.querySelector("usage-chart");
-    const chart = elem.chart;
+    const elem = document.querySelector("usage-chart") as UsageChartElem;
+    const chart = elem!.chart!;
     document.addEventListener(
       "chart-controller-updated",
       async (e: CustomEvent<Params>) => {
