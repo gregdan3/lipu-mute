@@ -35,22 +35,18 @@ export async function copyUrlToClipboard() {
   }
 }
 
-export async function handleGraphImageRequest() {
+async function makeGraphImage() {
   const main = document.querySelector("main");
   if (!main) return;
-
   const blob = await domtoimage.toBlob(main, {
     bgcolor: "white",
   });
-
   if (!blob) return;
+  return blob;
+}
 
-  // const item = new ClipboardItem({
-  //   "image/png": blob,
-  // });
-  //
-  // await navigator.clipboard.write([item]);
-
+export async function downloadGraphImage() {
+  const blob = await makeGraphImage();
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement("a");
@@ -61,6 +57,14 @@ export async function handleGraphImageRequest() {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+
+export async function copyGraphImage() {
+  const blob = await makeGraphImage();
+  const item = new ClipboardItem({
+    "image/png": blob,
+  });
+  await navigator.clipboard.write([item]);
 }
 
 export function fetchElems<T extends Record<string, readonly [string, any]>>(

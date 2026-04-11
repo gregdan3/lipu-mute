@@ -1,0 +1,30 @@
+---
+import IconButton from "@components/IconButton.astro";
+---
+
+<span data-copy-image-button>
+  <IconButton icon="mingcute:camera-line" />
+</span>
+
+<style>
+  @media (pointer: none), (pointer: coarse) {
+    [data-copy-image-button] {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { copyGraphImage } from "@utils/ui";
+  const el = document.querySelector("[data-copy-image-button]");
+  if (el) {
+    el.addEventListener("click", async () => {
+      await copyGraphImage();
+      document.dispatchEvent(
+        new CustomEvent("show-toast", {
+          detail: { message: "Copied graph image to clipboard" },
+        }),
+      );
+    });
+  }
+</script>

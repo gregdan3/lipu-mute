@@ -2,16 +2,16 @@
 import IconButton from "@components/IconButton.astro";
 ---
 
-<span data-copy-image-button>
+<span data-download-image-button>
   <IconButton icon="mingcute:download-2-line" />
 </span>
 
 <script>
-  import { handleGraphImageRequest } from "@utils/ui";
-  const el = document.querySelector("[data-copy-image-button]");
+  import { downloadGraphImage } from "@utils/ui";
+  const el = document.querySelector("[data-download-image-button]");
   if (el) {
     el.addEventListener("click", async () => {
-      await handleGraphImageRequest();
+      await downloadGraphImage();
       document.dispatchEvent(
         new CustomEvent("show-toast", {
           detail: { message: "Downloaded graph image" },
