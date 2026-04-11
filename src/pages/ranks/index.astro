@@ -9,37 +9,37 @@ const frontmatter = { title: "Rank by Frequency" };
 ---
 
 <script>
-  import type { Length } from "@utils/types";
+  // import type { Length } from "@utils/types";
   // import { fetchYearly } from "@utils/sqlite";
-  import { reloadBarChart } from "@utils/ranks";
-  import { getRanksParams, toURLParams } from "@utils/urlparams";
+  // import { reloadBarChart } from "@utils/ranks";
+  // import { getRanksParams, toURLParams } from "@utils/urlparams";
 
-  let ranksDiv: HTMLDivElement;
-  let yearDropdown: HTMLInputElement;
-  let searchBox: HTMLInputElement;
-  let termLenDropdown: HTMLInputElement;
-  let sentLenDropdown: HTMLInputElement;
-  let loader: HTMLSpanElement;
-  let errorBin: HTMLDivElement;
+  // let ranksDiv: HTMLDivElement;
+  // let yearDropdown: HTMLInputElement;
+  // let searchBox: HTMLInputElement;
+  // let termLenDropdown: HTMLInputElement;
+  // let sentLenDropdown: HTMLInputElement;
+  // let loader: HTMLSpanElement;
+  // let errorBin: HTMLDivElement;
   // let copyUrlButton: HTMLElement;
 
-  function initFetch() {
-    ranksDiv = document.getElementById("ranksDiv")! as HTMLDivElement;
-
-    searchBox = document.getElementById("searchBox")! as HTMLInputElement;
-
-    termLenDropdown = document.getElementById(
-      "termLenDropdown",
-    )! as HTMLInputElement;
-    sentLenDropdown = document.getElementById(
-      "sentLenDropdown",
-    )! as HTMLInputElement;
-    yearDropdown = document.getElementById("yearDropdown")! as HTMLInputElement;
-    loader = document.getElementById("loader")! as HTMLSpanElement;
-    errorBin = document.getElementById("errorBin")! as HTMLDivElement;
-
-    // copyUrlButton = document.getElementById("copyUrlButton")! as HTMLElement;
-  }
+  // function initFetch() {
+  //   ranksDiv = document.getElementById("ranksDiv")! as HTMLDivElement;
+  //
+  //   searchBox = document.getElementById("searchBox")! as HTMLInputElement;
+  //
+  //   termLenDropdown = document.getElementById(
+  //     "termLenDropdown",
+  //   )! as HTMLInputElement;
+  //   sentLenDropdown = document.getElementById(
+  //     "sentLenDropdown",
+  //   )! as HTMLInputElement;
+  //   yearDropdown = document.getElementById("yearDropdown")! as HTMLInputElement;
+  //   loader = document.getElementById("loader")! as HTMLSpanElement;
+  //   errorBin = document.getElementById("errorBin")! as HTMLDivElement;
+  //
+  //   // copyUrlButton = document.getElementById("copyUrlButton")! as HTMLElement;
+  // }
 
   // async function updateChart(
   //   ranksDiv: HTMLDivElement,
