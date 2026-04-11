@@ -38,7 +38,7 @@ const PARAM_MAP = {
   start: "startDropdown",
   end: "endDropdown",
   unit: "unitDropdown",
-} as const;
+} satisfies Record<keyof Params, string>;
 
 export const $ = fetchElems(CONTROLLER_ELEMENTS);
 
@@ -112,13 +112,16 @@ function disableUnusableScales() {
 }
 
 function setSearchParams() {
-  let searchParams = getSearchParams();
-  for (const key in PARAM_MAP) {
-    const elKey = PARAM_MAP[key];
-    const value = searchParams[key as keyof typeof searchParams];
+  const searchParams = getSearchParams();
+  const keys = Object.keys(PARAM_MAP) as (keyof Params)[];
+  for (const key of keys) {
+    const elemId = PARAM_MAP[key];
+    const value = searchParams[key];
 
     if (value) {
-      ($[elKey] as HTMLInputElement | HTMLSelectElement).value = value;
+      // @ts-expect-error: technically $ contains more than param elems
+      ($[elemId] as HTMLInputElement | HTMLSelectElement).value =
+        value.toString();
     }
   }
 }

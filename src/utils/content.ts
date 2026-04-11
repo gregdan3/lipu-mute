@@ -1,3 +1,4 @@
+// @ts-expect-error: post type is not clear?
 export function isPublished(post) {
   if (import.meta.env.DEV) return true;
   if (!post.body) return false;

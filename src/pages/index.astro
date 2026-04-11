@@ -130,12 +130,10 @@ const frontmatter = { title: "ilo Muni" };
   document.addEventListener("DOMContentLoaded", async () => {
     const elem = document.querySelector("usage-chart") as UsageChartElem;
     const chart = elem!.chart!;
-    document.addEventListener(
-      "chart-controller-updated",
-      async (e: CustomEvent<Params>) => {
-        await updatePage(chart, e.detail);
-      },
-    );
+    document.addEventListener("chart-controller-updated", async (e: Event) => {
+      const event = e as CustomEvent<Params>;
+      await updatePage(chart, event.detail);
+    });
   });
 </script>
 

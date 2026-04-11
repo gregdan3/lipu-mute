@@ -31,7 +31,7 @@ const {} = Astro.props;
 
 <script>
   const el = document.getElementById("toast");
-  let timeoutId = null;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   function show(message: string) {
     if (!el) return;
@@ -45,8 +45,9 @@ const {} = Astro.props;
       el.classList.remove("visible");
     }, 1500);
   }
-
-  document.addEventListener("show-toast", (e: CustomEvent) => {
+  document.addEventListener("show-toast", ((
+    e: CustomEvent<{ message: string }>,
+  ) => {
     show(e.detail.message);
-  });
+  }) as EventListener);
 </script>

@@ -20,7 +20,7 @@ const {
 
 let params = {};
 if (localParams.query) {
-  params = { ...defaults, ...localParams };
+  params = { ...(defaults as Params), ...localParams };
 }
 ---
 

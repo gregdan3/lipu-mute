@@ -5,10 +5,20 @@ import { truncateLabel } from "@utils/other.ts";
 import { parseInput, hasError } from "@utils/input";
 import { resolveQuery } from "@utils/sqlite";
 import type { FormatterFn, Field, Row, Query, Params } from "@utils/types";
+import type { Tick } from "chart.js";
 import type { ChartTypeRegistry, TooltipItem } from "chart.js/auto";
 import Chart from "chart.js/auto";
 import "chartjs-adapter-date-fns";
 import { defaults } from "@utils/constants";
+
+function makeParams(params: Partial<Params>): Params {
+  const merged = { ...defaults, ...params };
+  if (merged.query === undefined) {
+    throw new Error("makeParams: query is required");
+  }
+  // @ts-expect-error: c'mon dude
+  return merged;
+}
 
 export class UsageChart {
   private chart: Chart<keyof ChartTypeRegistry, Row[], unknown> | null = null;
@@ -19,10 +29,10 @@ export class UsageChart {
   }
 
   // it's caller's responsibility to ensure that Params is coherent
-  async update(params: Partial<Params>): Promise<Query[]> {
-    params = { ...defaults, ...params };
+  async update(pParams: Partial<Params>): Promise<Query[]> {
+    const params = makeParams(pParams);
 
-    const queries = await parseInput(params.query);
+    const queries = await parseInput(params.query!);
     await Promise.all(queries.map((query) => resolveQuery(query, params)));
 
     const graphable = queries.filter((q) => !hasError(q));
@@ -32,8 +42,8 @@ export class UsageChart {
     }
 
     let epsilon = 0;
-    if (SCALES[params.scale].axis === "logarithmic") {
-      epsilon = adjustZeroLogScale(graphable, params.field);
+    if (SCALES[params.scale!].axis === "logarithmic") {
+      epsilon = adjustZeroLogScale(graphable, params.field!);
     }
 
     const datasets = await this.buildData(graphable);
@@ -43,6 +53,7 @@ export class UsageChart {
       this.chart = new Chart(this.canvas, {
         type: "line",
         data: { datasets },
+        // @ts-expect-error: what does it even want
         options,
         plugins: [htmlLegendPlugin, crossHairPlugin],
       });
@@ -50,6 +61,7 @@ export class UsageChart {
     }
 
     this.chart.data.datasets = datasets;
+    // @ts-expect-error: what does it even want
     this.chart.options = options;
     this.chart.update();
 
@@ -93,7 +105,11 @@ export class UsageChart {
           ticks: {
             major: { enabled: true },
             padding: 1,
-            callback: function (value, index, ticks) {
+            callback: function (
+              value: string | number,
+              index: number,
+              ticks: Tick[],
+            ) {
               const tick = ticks[index];
               const date = new Date(tick.value);
 
@@ -131,7 +147,6 @@ export class UsageChart {
             display: false,
           },
           ticks: {
-            // @ts-expect-error: value can apparently be string but it never is
             callback: FORMATTERS[scale.axisNums],
           },
         },
@@ -153,7 +168,6 @@ export class UsageChart {
         legend: {
           display: !useHtmlLegend,
         },
-        // @ts-expect-error: registration can't fix inline config
         htmlLegend: {
           containerID: "usageLegend",
         },
