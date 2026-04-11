@@ -20,105 +20,94 @@ import type {
   Params,
   RanksURLParams,
   UnitTime,
+  Smoother,
+  Smoothing,
 } from "@utils/types";
+import { createEnumValidator } from "@utils/types";
 
 import { randomElem, isValidTimestamp } from "@utils/other";
+
+const validateScale = createEnumValidator(Object.keys(SCALES));
+const validateField = createEnumValidator(Object.keys(FIELDS));
+const validateUnit = createEnumValidator(Object.keys(UNIT_TIMES));
+const validateSmoother = createEnumValidator(Object.keys(SMOOTHERS));
+const validateSmoothing = createEnumValidator(
+  SMOOTHINGS.map((n) => n.toString()),
+);
 
 function coalesceTimestamp(
   maybeTimestamp: string | null,
   fallback: string | null = null,
 ): string | null {
-  let timestamp = null;
-  if (isValidTimestamp(maybeTimestamp)) {
-    timestamp = maybeTimestamp as string;
+  if (!maybeTimestamp || !isValidTimestamp(maybeTimestamp)) {
+    return fallback;
   }
-  return timestamp;
+  return maybeTimestamp;
 }
 
-function coalesceRandomly(
-  maybeParam: string | null,
-  // TODO: callable validation function for maybeParam
-  defaultParams: string[],
-): string {
-  let param = randomElem(defaultParams);
-  if (maybeParam) {
-    param = maybeParam;
-  }
-  return param;
+function getParam<T>(
+  value: string | null,
+  parse: (v: string | null) => T | null,
+  fallback: T,
+): T {
+  const parsed = parse(value);
+  return parsed ?? fallback;
 }
 
-function coalesceParam<T extends string>(
-  maybeValue: string | null,
-  options: readonly T[] | Record<T, unknown>,
-  fallback: T | null = null,
-): T | null {
-  if (!maybeValue) return fallback;
-  if (Array.isArray(options)) {
-    return options.includes(maybeValue as T) ? (maybeValue as T) : fallback;
-  }
-  if (maybeValue in options) {
-    return maybeValue as T;
-  }
-  return fallback;
+function parseTimestamp(value: string | null, fallback: number): number {
+  if (value === null) return fallback;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return n;
 }
 
 export function getSearchParams(): Params {
-  const urlParams = new URLSearchParams(window.location.search);
+  const url = new URLSearchParams(window.location.search);
 
-  const query = coalesceRandomly(urlParams.get("query"), SAMPLE_SEARCHES);
-
-  const scale = coalesceParam(
-    urlParams.get("scale"),
-    SCALES,
+  const query = url.get("query") ?? randomElem(SAMPLE_SEARCHES);
+  const scale = getParam(
+    url.get("scale"),
+    validateScale,
     defaultScale,
   ) as Scale;
-  const field = coalesceParam(
-    urlParams.get("field"),
-    FIELDS,
+  const field = getParam(
+    url.get("field"),
+    validateField,
     defaultField,
   ) as Field;
-  const unit = coalesceParam(
-    urlParams.get("unit"),
-    UNIT_TIMES,
-    defaultUnit,
-  ) as UnitTime;
-  const smoothing = coalesceParam(
-    urlParams.get("smoothing"),
-    SMOOTHINGS,
-    defaultSmoothing,
-  ) as Number;
-  const smoother = coalesceParam(
-    urlParams.get("smoother"),
-    SMOOTHERS,
+  const unit = getParam(url.get("unit"), validateUnit, defaultUnit) as UnitTime;
+  const smoother = getParam(
+    url.get("smoother"),
+    validateSmoother,
     defaultSmoother,
   ) as Smoother;
+  const smoothing = Number(
+    getParam(
+      url.get("smoothing"),
+      validateSmoothing,
+      defaultSmoothing.toString(),
+    ),
+  );
+  const start = parseTimestamp(url.get("start"), defaultStart) as number;
+  const end = parseTimestamp(url.get("end"), defaultEnd) as number;
 
-  const start = coalesceTimestamp(
-    urlParams.get("start"),
-    defaultStart,
-  ) as Number;
-  const end = coalesceTimestamp(urlParams.get("end"), defaultEnd) as Number;
-
-  return { query, scale, field, unit, smoothing, smoother, start, end };
-}
-
-export function getRanksParams(): RanksURLParams {
-  const urlParams = new URLSearchParams(window.location.search);
-
-  const termLen = coalesceParam(urlParams.get("termLen"), LENGTHS);
-
-  const yearParam = urlParams.get("year") || "";
-  const year = coalesceTimestamp(yearParam);
-
-  return { termLen, year };
+  return {
+    query,
+    scale,
+    field,
+    unit,
+    smoothing,
+    smoother,
+    start,
+    end,
+  };
 }
 
 export function toURLParams(params: Params) {
   const urlParams = new URLSearchParams();
-  for (const key in params) {
-    if (params[key]) {
-      urlParams.append(key, params[key]);
-    }
+  for (const [key, value] of Object.entries(params)) {
+    if (value === null || value === undefined) continue;
+    urlParams.set(key, String(value));
   }
 
   const newUrl = `${window.location.pathname}?${urlParams.toString()}`;

@@ -11,6 +11,18 @@ import {
 import type { QueryError } from "@utils/errors";
 import { FORMATTERS } from "@utils/ui";
 
+export type Validator<T> = (value: string | null) => T | null;
+
+export const createEnumValidator =
+  <T extends string>(allowed: readonly T[]) =>
+  (value: string | null): T | null => {
+    if (value === null) return null;
+    if ((allowed as readonly string[]).includes(value)) {
+      return value as T;
+    }
+    return null;
+  };
+
 export type Stringable = string | number | boolean | bigint | symbol;
 
 export const lengths = LENGTHS.map((n: string): number => {
@@ -32,7 +44,7 @@ export type Scale = keyof typeof SCALES;
 export type ScaleData = (typeof SCALES)[Scale];
 export type LengthParam = (typeof LENGTHS)[number];
 export type Smoother = keyof typeof SMOOTHERS;
-export type SmoothingParam = (typeof SMOOTHINGS)[number];
+export type Smoothing = (typeof SMOOTHINGS)[number];
 export type UnitTime = keyof typeof UNIT_TIMES;
 
 export type Axis = "linear" | "logarithmic";
@@ -87,20 +99,4 @@ export interface Params {
   start: number;
   end: number;
   unit: UnitTime;
-}
-
-export interface SearchURLParams {
-  query: string;
-  scale: Scale | null;
-  field: Field | null;
-  smoother: Smoother | null;
-  smoothing: SmoothingParam | null;
-  start: string | null;
-  end: string | null;
-  unit: UnitTime | null;
-}
-
-export interface RanksURLParams {
-  termLen: LengthParam | null;
-  year: string | null;
 }
