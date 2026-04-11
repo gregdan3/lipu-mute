@@ -38,18 +38,59 @@ export async function copyUrlToClipboard() {
   }
 }
 
-async function makeGraphImage() {
+async function padBlob(
+  blob: Blob,
+  padding: number,
+  bgColor: string,
+): Promise<Blob> {
+  const img = new Image();
+  const url = URL.createObjectURL(blob);
+
+  img.src = url;
+
+  await new Promise<void>((resolve) => {
+    img.onload = () => resolve();
+  });
+
+  URL.revokeObjectURL(url);
+
+  const canvas = document.createElement("canvas");
+
+  const width = img.width + padding * 2;
+  const height = img.height + padding * 2;
+
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("No 2D context");
+
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.drawImage(img, padding, padding);
+
+  const newBlob: Blob = await new Promise((resolve) => {
+    canvas.toBlob((b) => resolve(b as Blob), "image/png");
+  });
+
+  return newBlob;
+}
+
+async function makeGraphImage(bgcolor: string = "#f2f2f2") {
   const main = document.querySelector("main");
   if (!main) return;
-  const blob = await domtoimage.toBlob(main, {
-    bgcolor: "white",
-  });
+  const blob = await domtoimage.toBlob(main, { bgcolor });
   if (!blob) return;
-  return blob;
+
+  const padded = await padBlob(blob, 20, bgcolor);
+
+  return padded;
 }
 
 export async function downloadGraphImage() {
   const blob = await makeGraphImage();
+  if (!blob) return;
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement("a");
@@ -64,9 +105,8 @@ export async function downloadGraphImage() {
 
 export async function copyGraphImage() {
   const blob = await makeGraphImage();
-  const item = new ClipboardItem({
-    "image/png": blob,
-  });
+  if (!blob) return;
+  const item = new ClipboardItem({ "image/png": blob });
   await navigator.clipboard.write([item]);
 }
 
